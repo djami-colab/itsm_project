@@ -1,0 +1,155 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Gestion des Tickets - ITSM Portal{% endblock %}
+{% block nav_admin_tickets_active %}active{% endblock %}
+
+{% block page_title %}Tous les Incidents & Demandes{% endblock %}
+{% block page_subtitle %}Consultez, filtrez et gérez les demandes de support envoyées par les utilisateurs{% endblock %}
+
+{% block content %}
+<!-- Filters card -->
+<div class="card" style="padding: 1.5rem;">
+    <div class="filter-bar">
+        <form method="GET" action="{% url 'admin_liste_tickets' %}">
+            <div class="filter-group">
+                <label class="form-label" style="font-size: 0.75rem;">Statut</label>
+                <select name="statut" class="form-control">
+                    <option value="">Tous</option>
+                    {% for st in statuts %}
+                    <option value="{{ st.id }}" {% if selected_statut == st.id %}selected{% endif %}>{{ st.libelle }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="form-label" style="font-size: 0.75rem;">Catégorie</label>
+                <select name="categorie" class="form-control">
+                    <option value="">Toutes</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if selected_categorie == cat.id %}selected{% endif %}>{{ cat.libelle }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="form-label" style="font-size: 0.75rem;">Technicien</label>
+                <select name="technicien" class="form-control">
+                    <option value="">Tous</option>
+                    <option value="none" {% if selected_technicien == 'none' %}selected{% endif %}>[Non assignés]</option>
+                    {% for tech in techniciens %}
+                    <option value="{{ tech.id }}" {% if selected_technicien == tech.id|stringformat:"i" %}selected{% endif %}>{{ tech.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="form-label" style="font-size: 0.75rem;">Priorité</label>
+                <select name="priorite" class="form-control">
+                    <option value="">Toutes</option>
+                    {% for prio in priorites %}
+                    <option value="{{ prio.id }}" {% if selected_priorite == prio.id %}selected{% endif %}>{{ prio.libelle }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="display: flex; align-items: flex-end; gap: 0.5rem; margin-top: 1rem;">
+                <button type="submit" class="btn btn-primary" style="padding: 0.7rem 1.2rem;">
+                    <i data-lucide="sliders-horizontal"></i> Filtrer
+                </button>
+                <a href="{% url 'admin_liste_tickets' %}" class="btn btn-secondary" title="Réinitialiser" style="padding: 0.7rem 1rem;">
+                    <i data-lucide="rotate-ccw"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tickets Table -->
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div class="table-wrapper">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Demandeur</th>
+                    <th>Catégorie</th>
+                    <th>Incident</th>
+                    <th>Priorité</th>
+                    <th>Statut</th>
+                    <th>Technicien</th>
+                    <th>Date de création</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td style="font-weight: bold; color: var(--primary);">#{{ ticket.id }}</td>
+                    <td>
+                        <span style="font-weight: 500; color: #fff;">{{ ticket.utilisateur.username }}</span>
+                        <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">{{ ticket.utilisateur.email }}</span>
+                    </td>
+                    <td>
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            {% if ticket.categorie.libelle == 'Réseau' %}
+                                <i data-lucide="wifi" style="width: 16px; height: 16px; color: var(--status-assigne);"></i>
+                            {% elif ticket.categorie.libelle == 'Matériel' %}
+                                <i data-lucide="monitor" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                            {% elif ticket.categorie.libelle == 'Logiciel' %}
+                                <i data-lucide="code" style="width: 16px; height: 16px; color: var(--secondary);"></i>
+                            {% elif ticket.categorie.libelle == 'Imprimante/Scanner' %}
+                                <i data-lucide="printer" style="width: 16px; height: 16px; color: var(--status-nouveau);"></i>
+                            {% else %}
+                                <i data-lucide="help-circle" style="width: 16px; height: 16px; color: var(--text-secondary);"></i>
+                            {% endif %}
+                            {{ ticket.categorie.libelle }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if ticket.probleme %}
+                            {{ ticket.probleme.libelle }}
+                        {% else %}
+                            <em style="color: var(--text-secondary);">Autre :</em> {{ ticket.probleme_autre|truncatechars:45 }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-prio-{{ ticket.priorite.libelle|lower }}">
+                            {{ ticket.priorite.libelle }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ ticket.statut.libelle|lower|slugify }}">
+                            {{ ticket.statut.libelle }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if ticket.technicien %}
+                            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                                <i data-lucide="user-check" style="width: 14px; height: 14px; color: var(--primary);"></i>
+                                {{ ticket.technicien.username }}
+                            </span>
+                        {% else %}
+                            <span class="badge" style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2);">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td style="color: var(--text-secondary);">{{ ticket.date_creation|date:"d/m/Y H:i" }}</td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'admin_detail_ticket' ticket.id %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                            <i data-lucide="settings" style="width: 14px; height: 14px;"></i> Gérer
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 4rem 2rem; color: var(--text-secondary);">
+                        <i data-lucide="inbox" style="width: 48px; height: 48px; stroke-width: 1; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                        <p style="font-size: 1.1rem; font-weight: 500; color: #fff;">Aucun ticket trouvé</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.25rem;">Aucun incident n'a été signalé avec ces critères de filtrage.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

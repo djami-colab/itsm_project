@@ -1,0 +1,167 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Mes Tickets - ITSM Portal{% endblock %}
+{% block nav_dashboard_active %}active{% endblock %}
+
+{% block page_title %}Mes Tickets d'Assistance{% endblock %}
+{% block page_subtitle %}Consultez l'état et l'historique de vos demandes de support informatique{% endblock %}
+
+{% block content %}
+<!-- Stats Overview -->
+<div class="stats-grid">
+    <div class="card stat-card">
+        <div class="stat-info">
+            <span class="stat-label">Total Demandes</span>
+            <div class="stat-value">{{ stats.total|default:0 }}</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+            <i data-lucide="ticket"></i>
+        </div>
+    </div>
+    
+    <div class="card stat-card">
+        <div class="stat-info">
+            <span class="stat-label">Nouveaux</span>
+            <div class="stat-value" style="color: var(--status-nouveau);">{{ stats.nouveau|default:0 }}</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--status-nouveau);">
+            <i data-lucide="sparkles"></i>
+        </div>
+    </div>
+    
+    <div class="card stat-card">
+        <div class="stat-info">
+            <span class="stat-label">En Traitement</span>
+            <div class="stat-value" style="color: var(--status-en-cours);">{{ stats.en_cours|default:0 }}</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--status-en-cours);">
+            <i data-lucide="refresh-cw"></i>
+        </div>
+    </div>
+    
+    <div class="card stat-card">
+        <div class="stat-info">
+            <span class="stat-label">Résolus & Clôturés</span>
+            <div class="stat-value" style="color: var(--status-resolu);">{{ stats.resolu|default:0 }}</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--status-resolu);">
+            <i data-lucide="check-circle-2"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="card" style="padding: 1.25rem;">
+    <div class="filter-bar">
+        <form method="GET" action="{% url 'client_dashboard' %}">
+            <div class="filter-group" style="flex: 2;">
+                <input type="text" name="search" class="form-control" placeholder="Rechercher par description ou mot clé..." value="{{ search_query|default:'' }}">
+            </div>
+            
+            <div class="filter-group">
+                <select name="status" class="form-control">
+                    <option value="">Tous les statuts</option>
+                    <option value="Nouveau" {% if selected_status == 'Nouveau' %}selected{% endif %}>Nouveau</option>
+                    <option value="Assigné" {% if selected_status == 'Assigné' %}selected{% endif %}>Assigné</option>
+                    <option value="En cours" {% if selected_status == 'En cours' %}selected{% endif %}>En cours</option>
+                    <option value="Résolu" {% if selected_status == 'Résolu' %}selected{% endif %}>Résolu</option>
+                    <option value="Clôturé" {% if selected_status == 'Clôturé' %}selected{% endif %}>Clôturé</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn btn-secondary">
+                    <i data-lucide="search"></i> Filtrer
+                </button>
+                <a href="{% url 'client_dashboard' %}" class="btn btn-secondary" title="Réinitialiser">
+                    <i data-lucide="rotate-ccw"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tickets Table -->
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div class="table-wrapper">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Catégorie</th>
+                    <th>Problème</th>
+                    <th>Priorité</th>
+                    <th>Statut</th>
+                    <th>Date de création</th>
+                    <th>Technicien</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td style="font-weight: bold; color: var(--primary);">#{{ ticket.id }}</td>
+                    <td>
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            {% if ticket.categorie.libelle == 'Réseau' %}
+                                <i data-lucide="wifi" style="width: 16px; height: 16px; color: var(--status-assigne);"></i>
+                            {% elif ticket.categorie.libelle == 'Matériel' %}
+                                <i data-lucide="monitor" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                            {% elif ticket.categorie.libelle == 'Logiciel' %}
+                                <i data-lucide="code" style="width: 16px; height: 16px; color: var(--secondary);"></i>
+                            {% elif ticket.categorie.libelle == 'Imprimante/Scanner' %}
+                                <i data-lucide="printer" style="width: 16px; height: 16px; color: var(--status-nouveau);"></i>
+                            {% else %}
+                                <i data-lucide="help-circle" style="width: 16px; height: 16px; color: var(--text-secondary);"></i>
+                            {% endif %}
+                            {{ ticket.categorie.libelle }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if ticket.probleme %}
+                            {{ ticket.probleme.libelle }}
+                        {% else %}
+                            <em style="color: var(--text-secondary);">Autre :</em> {{ ticket.probleme_autre|truncatechars:40 }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-prio-{{ ticket.priorite.libelle|lower }}">
+                            {{ ticket.priorite.libelle }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ ticket.statut.libelle|lower|slugify }}">
+                            {{ ticket.statut.libelle }}
+                        </span>
+                    </td>
+                    <td style="color: var(--text-secondary);">{{ ticket.date_creation|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if ticket.technicien %}
+                            {{ ticket.technicien.username }}
+                        {% else %}
+                            <span style="color: var(--text-muted); font-style: italic;">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'detail_ticket' ticket.id %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Voir
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 4rem 2rem; color: var(--text-secondary);">
+                        <i data-lucide="inbox" style="width: 48px; height: 48px; stroke-width: 1; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                        <p style="font-size: 1.1rem; font-weight: 500; color: #fff;">Aucun ticket trouvé</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.25rem;">Vous n'avez soumis aucun ticket correspondant à vos critères.</p>
+                        <a href="{% url 'creer_ticket' %}" class="btn btn-primary" style="margin-top: 1.5rem;">
+                            <i data-lucide="plus-circle"></i> Créer mon premier ticket
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

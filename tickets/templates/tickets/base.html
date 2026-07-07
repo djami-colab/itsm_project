@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ITSM - Portail Support{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'tickets/css/styles.css' %}">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">I</div>
+                <span>ITSM Portal</span>
+            </div>
+            
+            <ul class="nav-menu">
+                {% if user.is_authenticated %}
+                    {% if user.is_client %}
+                        <li class="nav-item {% block nav_dashboard_active %}{% endblock %}">
+                            <a href="{% url 'client_dashboard' %}">
+                                <i data-lucide="layout-dashboard"></i>
+                                <span>Mes Tickets</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {% block nav_creer_active %}{% endblock %}">
+                            <a href="{% url 'creer_ticket' %}">
+                                <i data-lucide="plus-circle"></i>
+                                <span>Nouveau Ticket</span>
+                            </a>
+                        </li>
+                    {% elif user.is_admin or user.is_technicien %}
+                        <li class="nav-item {% block nav_admin_dashboard_active %}{% endblock %}">
+                            <a href="{% url 'admin_dashboard' %}">
+                                <i data-lucide="bar-chart-3"></i>
+                                <span>Tableau de Bord</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {% block nav_admin_tickets_active %}{% endblock %}">
+                            <a href="{% url 'admin_liste_tickets' %}">
+                                <i data-lucide="ticket"></i>
+                                <span>Tous les Tickets</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="nav-item logout">
+                        <a href="{% url 'logout' %}">
+                            <i data-lucide="log-out"></i>
+                            <span>Déconnexion</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item active">
+                        <a href="{% url 'login' %}">
+                            <i data-lucide="log-in"></i>
+                            <span>Connexion</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            {% if user.is_authenticated %}
+            <header class="top-header">
+                <div class="page-title">
+                    <h1>{% block page_title %}ITSM Dashboard{% endblock %}</h1>
+                    <p>{% block page_subtitle %}Gestion des incidents et des demandes informatiques{% endblock %}</p>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="avatar">
+                        {{ user.username|slice:":2"|upper }}
+                    </div>
+                    <div class="user-info">
+                        <span class="username">{{ user.username }}</span>
+                        <span class="role">{{ user.role.libelle }}</span>
+                    </div>
+                </div>
+            </header>
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,188 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Dashboard Analytique - ITSM Portal{% endblock %}
+{% block nav_admin_dashboard_active %}active{% endblock %}
+
+{% block page_title %}Tableau de Bord Supervision{% endblock %}
+{% block page_subtitle %}Statistiques de charge, état des incidents et performance du support informatique{% endblock %}
+
+{% block content %}
+<!-- Analytics Overview Cards -->
+<div class="stats-grid">
+    <div class="card stat-card">
+        <div class="stat-info">
+            <span class="stat-label">Tickets Totaux</span>
+            <div class="stat-value">{{ total_tickets }}</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+            <i data-lucide="ticket"></i>
+        </div>
+    </div>
+    
+    <div class="card stat-card">
+        <div class="stat-info">
+            <span class="stat-label">En Attente (Nouveaux)</span>
+            <div class="stat-value" style="color: var(--status-nouveau);">{{ nouveaux_tickets }}</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--status-nouveau);">
+            <i data-lucide="bell"></i>
+        </div>
+    </div>
+    
+    <div class="card stat-card">
+        <div class="stat-info">
+            <span class="stat-label">Résolus</span>
+            <div class="stat-value" style="color: var(--status-resolu);">{{ resolus_tickets }}</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--status-resolu);">
+            <i data-lucide="shield-check"></i>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+    <!-- Chart: Tickets by Status -->
+    <div class="card">
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <i data-lucide="pie-chart" style="vertical-align: middle; margin-right: 0.5rem; color: var(--primary);"></i>
+            Tickets par Statut
+        </h2>
+        <div style="position: relative; height: 250px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Support Team Workload -->
+    <div class="card">
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <i data-lucide="users" style="vertical-align: middle; margin-right: 0.5rem; color: var(--secondary);"></i>
+            Charge Équipe de Support
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Nombre de tickets actifs (non résolus/clôturés) assignés par technicien.
+        </p>
+        <div class="workload-list">
+            {% for tech in workload_data %}
+            <div class="workload-item">
+                <div class="workload-header">
+                    <span class="workload-name">
+                        <i data-lucide="user" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 0.25rem;"></i>
+                        {{ tech.username }}
+                    </span>
+                    <span class="workload-count">{{ tech.count }} ticket(s) actif(s)</span>
+                </div>
+                <div class="workload-bar-bg">
+                    <!-- Dynamic width calculation in JS or templates -->
+                    <div class="workload-bar-fill" style="width: {% widthratio tech.count 10 100 %}%;"></div>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-muted); text-align: center; font-style: italic; padding: 2rem;">Aucun technicien enregistré ou actif.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Recurrent Problems & Incidents -->
+<div class="card">
+    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+        <i data-lucide="activity" style="vertical-align: middle; margin-right: 0.5rem; color: #ef4444;"></i>
+        Problèmes Récurrents (Top 5)
+    </h2>
+    <div class="table-wrapper">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Rang</th>
+                    <th>Catégorie</th>
+                    <th>Problème Spécifique</th>
+                    <th style="text-align: right;">Nombre d'occurrences</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prob in problemes_recurrents %}
+                <tr>
+                    <td style="font-weight: bold; color: var(--primary);">#{{ forloop.counter }}</td>
+                    <td>{{ prob.categorie__libelle }}</td>
+                    <td>{{ prob.probleme__libelle }}</td>
+                    <td style="text-align: right; font-weight: bold; color: #fff;">{{ prob.count }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Aucune donnée récurrente enregistrée.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- ChartJS Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        
+        // Extract status counts data from django context safely
+        const chartLabels = [];
+        const chartData = [];
+        
+        {% for status, count in status_chart_data.items %}
+            chartLabels.push("{{ status }}");
+            chartData.push({{ count }});
+        {% endfor %}
+
+        // Colors mapping to css variable hex values
+        const colors = [
+            '#f59e0b', // Nouveau
+            '#3b82f6', // Assigné
+            '#8b5cf6', // En cours
+            '#10b981', // Résolu
+            '#6b7280'  // Clôturé
+        ];
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Tickets',
+                    data: chartData,
+                    backgroundColor: colors,
+                    borderColor: '#161626',
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#9ca3af',
+                            font: {
+                                family: 'Inter',
+                                size: 12
+                            },
+                            boxWidth: 15,
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#09090e',
+                        titleColor: '#fff',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(255,255,255,0.08)',
+                        borderWidth: 1
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    });
+</script>
+{% endblock %}

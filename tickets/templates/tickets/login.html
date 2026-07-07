@@ -1,0 +1,57 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+
+{% block title %}Connexion - ITSM Portal{% endblock %}
+
+{% block content %}
+<div class="login-body">
+    <div class="card login-card">
+        <div class="login-header">
+            <div style="display: inline-flex; justify-content: center; align-items: center; margin-bottom: 1rem;">
+                <div class="brand-icon" style="width: 48px; height: 48px; font-size: 1.5rem;">I</div>
+            </div>
+            <h2>Connexion ITSM</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Accédez à votre espace d'assistance informatique</p>
+        </div>
+
+        {% if error_message %}
+        <div class="alert alert-danger">
+            {{ error_message }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="username" class="form-label">Nom d'utilisateur</label>
+                <input type="text" name="username" id="username" class="form-control" placeholder="Entrez votre identifiant (ex: client1)" required autocomplete="username">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label for="password" class="form-label">Mot de passe</label>
+                <input type="password" name="password" id="password" class="form-control" placeholder="Entrez votre mot de passe" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.9rem;">
+                <i data-lucide="log-in"></i> Se connecter
+            </button>
+        </form>
+        
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+            <p>Comptes de test (password: <strong>password123</strong>) :</p>
+            <div style="display: flex; justify-content: space-around; margin-top: 0.5rem; gap: 0.5rem; flex-wrap: wrap;">
+                <span>Client : <code>client1</code></span>
+                <span>Tech : <code>tech1</code></span>
+                <span>Admin : <code>admin</code></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hide sidebar during login for cleaner view -->
+<style>
+    .sidebar { display: none !important; }
+    .main-content { margin-left: 0 !important; padding: 0 !important; }
+</style>
+{% endblock %}

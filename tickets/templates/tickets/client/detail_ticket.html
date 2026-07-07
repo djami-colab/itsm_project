@@ -1,0 +1,180 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Ticket #{{ ticket.id }} - ITSM Portal{% endblock %}
+{% block nav_dashboard_active %}active{% endblock %}
+
+{% block page_title %}Détail du Ticket #{{ ticket.id }}{% endblock %}
+{% block page_subtitle %}Consultez l'historique et discutez avec l'équipe technique{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{% url 'client_dashboard' %}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+        <i data-lucide="arrow-left"></i> Retour aux tickets
+    </a>
+</div>
+
+<div class="ticket-grid">
+    <!-- Left Column: Incident Timeline & Discussion Thread -->
+    <div>
+        <div class="card">
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                <i data-lucide="message-square" style="vertical-align: middle; margin-right: 0.5rem;"></i>
+                Fil de discussion & Historique
+            </h2>
+
+            <div class="timeline">
+                {% for hist in historiques %}
+                <div class="timeline-item">
+                    <div class="timeline-icon" style="border-color: 
+                        {% if hist.nouveau_statut.libelle == 'Nouveau' %}var(--status-nouveau)
+                        {% elif hist.nouveau_statut.libelle == 'Assigné' %}var(--status-assigne)
+                        {% elif hist.nouveau_statut.libelle == 'En cours' %}var(--status-en-cours)
+                        {% elif hist.nouveau_statut.libelle == 'Résolu' %}var(--status-resolu)
+                        {% else %}var(--status-cloture){% endif %};">
+                    </div>
+                    
+                    <div class="timeline-content">
+                        <div class="timeline-header">
+                            <span class="timeline-user">
+                                {% if hist.modifie_par.is_client %}
+                                    <i data-lucide="user" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 0.2rem;"></i>
+                                {% else %}
+                                    <i data-lucide="shield" style="width: 12px; height: 12px; color: var(--primary); vertical-align: middle; margin-right: 0.2rem;"></i>
+                                {% endif %}
+                                {{ hist.modifie_par.username }}
+                            </span>
+                            <span>{{ hist.date_modification|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="timeline-body">
+                            {{ hist.commentaire|linebreaksbr }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Comment Editor -->
+            <div class="comment-editor" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.5rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem;">Ajouter un message ou un document</h3>
+                <form method="POST" action="{% url 'detail_ticket' ticket.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <textarea name="commentaire" class="form-control" placeholder="Saisissez votre message ici..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.8rem; color: var(--text-secondary);">Ajouter des fichiers à ce message</label>
+                        <input type="file" name="fichiers" class="form-control" multiple style="background: rgba(255,255,255,0.02); padding: 0.5rem;">
+                    </div>
+
+                    <div style="text-align: right;">
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="send"></i> Envoyer le message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Ticket Specifications & Attachments -->
+    <div>
+        <!-- Specifications Card -->
+        <div class="card">
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                <i data-lucide="info" style="vertical-align: middle; margin-right: 0.5rem;"></i>
+                Informations du Ticket
+            </h2>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+                <div>
+                    <span style="color: var(--text-secondary); display: block; font-size: 0.8rem; text-transform: uppercase;">Statut</span>
+                    <span class="badge badge-{{ ticket.statut.libelle|lower|slugify }}" style="margin-top: 0.25rem;">
+                        {{ ticket.statut.libelle }}
+                    </span>
+                </div>
+                
+                <div>
+                    <span style="color: var(--text-secondary); display: block; font-size: 0.8rem; text-transform: uppercase;">Priorité</span>
+                    <span class="badge badge-prio-{{ ticket.priorite.libelle|lower }}" style="margin-top: 0.25rem;">
+                        {{ ticket.priorite.libelle }}
+                    </span>
+                </div>
+
+                <div>
+                    <span style="color: var(--text-secondary); display: block; font-size: 0.8rem; text-transform: uppercase;">Catégorie</span>
+                    <strong style="color: #fff;">{{ ticket.categorie.libelle }}</strong>
+                </div>
+
+                <div>
+                    <span style="color: var(--text-secondary); display: block; font-size: 0.8rem; text-transform: uppercase;">Type d'incident</span>
+                    <strong style="color: #fff;">
+                        {% if ticket.probleme %}
+                            {{ ticket.probleme.libelle }}
+                        {% else %}
+                            {{ ticket.probleme_autre }}
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div>
+                    <span style="color: var(--text-secondary); display: block; font-size: 0.8rem; text-transform: uppercase;">Technicien en Charge</span>
+                    <strong style="color: #fff;">
+                        {% if ticket.technicien %}
+                            <i data-lucide="user-check" style="width: 14px; height: 14px; color: var(--primary); vertical-align: middle; margin-right: 0.25rem;"></i>
+                            {{ ticket.technicien.username }}
+                        {% else %}
+                            <span style="color: var(--text-muted); font-style: italic;">En attente d'affectation</span>
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+                    <span style="color: var(--text-secondary); display: block; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.25rem;">Description Initiale</span>
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--border-radius-sm); color: var(--text-secondary); line-height: 1.4; word-break: break-word;">
+                        {{ ticket.description|linebreaksbr }}
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+                    <p>Créé le : {{ ticket.date_creation|date:"d/m/Y H:i" }}</p>
+                    {% if ticket.date_assignation %}
+                        <p>Assigné le : {{ ticket.date_assignation|date:"d/m/Y H:i" }}</p>
+                    {% endif %}
+                    {% if ticket.date_resolution %}
+                        <p>Résolu le : {{ ticket.date_resolution|date:"d/m/Y H:i" }}</p>
+                    {% endif %}
+                    {% if ticket.date_cloture %}
+                        <p>Clôturé le : {{ ticket.date_cloture|date:"d/m/Y H:i" }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Attachments Card -->
+        <div class="card">
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                <i data-lucide="paperclip" style="vertical-align: middle; margin-right: 0.5rem;"></i>
+                Pièces Jointes ({{ pieces_jointes.count }})
+            </h2>
+            
+            {% if pieces_jointes %}
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                {% for pj in pieces_jointes %}
+                <a href="{{ pj.fichier.url }}" download class="attachment-badge" style="display: flex; width: 100%; border-radius: var(--border-radius-sm); padding: 0.75rem;">
+                    <i data-lucide="download" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                    <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; flex: 1;">
+                        <span style="display: block; color: #fff; font-size: 0.85rem;">{{ pj.nom_original }}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Uploadé par {{ pj.uploaded_by.username }} le {{ pj.date_upload|date:"d/m H:i" }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; text-align: center; padding: 1rem 0;">Aucun fichier joint.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

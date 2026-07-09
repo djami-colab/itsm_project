@@ -8,6 +8,7 @@ urlpatterns = [
     
     # Client Portal
     path('client/dashboard/', views.client_dashboard, name='client_dashboard'),
+    path('client/tickets/', views.client_tickets, name='client_tickets'),
     path('client/ticket/nouveau/', views.creer_ticket, name='creer_ticket'),
     path('client/ticket/<int:ticket_id>/', views.detail_ticket, name='detail_ticket'),
     

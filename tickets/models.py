@@ -63,7 +63,7 @@ class Ticket(models.Model):
     priorite = models.ForeignKey(Priorite, on_delete=models.PROTECT, related_name='tickets')
     statut = models.ForeignKey(StatutTicket, on_delete=models.PROTECT, related_name='tickets')
     technicien = models.ForeignKey(Utilisateur, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets_assignes')
-    description = models.TextField()
+    description = models.TextField(blank=True, default="")
     
     date_creation = models.DateTimeField(auto_now_add=True)
     date_assignation = models.DateTimeField(null=True, blank=True)

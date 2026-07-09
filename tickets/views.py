@@ -47,12 +47,32 @@ def dashboard_redirect(request):
 def client_dashboard(request):
     if not request.user.is_client:
         return redirect('admin_dashboard')
+    
+    categories = Categorie.objects.all()
+    return render(request, 'tickets/client/dashboard.html', {
+        'categories': categories
+    })
+
+@login_required
+def client_tickets(request):
+    if not request.user.is_client:
+        return redirect('admin_dashboard')
         
     status_filter = request.GET.get('status')
     search_query = request.GET.get('search')
     
-    tickets = Ticket.objects.filter(utilisateur=request.user).order_by('-date_creation')
-    
+    base_tickets = Ticket.objects.filter(utilisateur=request.user)
+
+    # Stats on all client tickets (independent of active filters)
+    stats = base_tickets.aggregate(
+        total=Count('id'),
+        nouveau=Count('id', filter=models.Q(statut__libelle='Nouveau')),
+        en_cours=Count('id', filter=models.Q(statut__libelle='En cours') | models.Q(statut__libelle='Assigné')),
+        resolu=Count('id', filter=models.Q(statut__libelle='Résolu') | models.Q(statut__libelle='Clôturé'))
+    )
+
+    tickets = base_tickets.order_by('-date_creation')
+
     if status_filter:
         tickets = tickets.filter(statut__libelle=status_filter)
     if search_query:
@@ -61,16 +81,8 @@ def client_dashboard(request):
             models.Q(probleme__libelle__icontains=search_query) |
             models.Q(probleme_autre__icontains=search_query)
         )
-        
-    # Get stat counts for client's dashboard overview cards
-    stats = tickets.aggregate(
-        total=Count('id'),
-        nouveau=Count('id', filter=models.Q(statut__libelle='Nouveau')),
-        en_cours=Count('id', filter=models.Q(statut__libelle='En cours') | models.Q(statut__libelle='Assigné')),
-        resolu=Count('id', filter=models.Q(statut__libelle='Résolu') | models.Q(statut__libelle='Clôturé'))
-    )
     
-    return render(request, 'tickets/client/dashboard.html', {
+    return render(request, 'tickets/client/tickets_list.html', {
         'tickets': tickets,
         'stats': stats,
         'selected_status': status_filter,
@@ -81,25 +93,24 @@ def client_dashboard(request):
 def creer_ticket(request):
     if not request.user.is_client:
         return redirect('admin_dashboard')
-        
-    categories = Categorie.objects.all()
+
     priorities = Priorite.objects.all().order_by('niveau')
-    
+
     if request.method == 'POST':
         categorie_id = request.POST.get('categorie')
         probleme_id = request.POST.get('probleme')
         probleme_autre = request.POST.get('probleme_autre')
         priorite_id = request.POST.get('priorite')
-        description = request.POST.get('description')
-        
+        description = request.POST.get('description', '')
+
         categorie = get_object_or_404(Categorie, id=categorie_id)
         priorite = get_object_or_404(Priorite, id=priorite_id)
         statut_nouveau = get_object_or_404(StatutTicket, libelle='Nouveau')
-        
+
         probleme = None
         if probleme_id and probleme_id != 'autre':
             probleme = get_object_or_404(Probleme, id=probleme_id)
-            
+
         ticket = Ticket.objects.create(
             utilisateur=request.user,
             categorie=categorie,
@@ -109,8 +120,7 @@ def creer_ticket(request):
             statut=statut_nouveau,
             description=description
         )
-        
-        # Enregistrer l'historique initial
+
         HistoriqueTicket.objects.create(
             ticket=ticket,
             ancien_statut=None,
@@ -118,8 +128,7 @@ def creer_ticket(request):
             modifie_par=request.user,
             commentaire="Création initiale du ticket par le client."
         )
-        
-        # Pièces Jointes
+
         files = request.FILES.getlist('fichiers')
         for f in files:
             PieceJointe.objects.create(
@@ -128,12 +137,18 @@ def creer_ticket(request):
                 nom_original=f.name,
                 uploaded_by=request.user
             )
-            
+
+        return redirect('client_tickets')
+
+    categorie_id = request.GET.get('categorie_id')
+    if not categorie_id:
         return redirect('client_dashboard')
-        
+
+    selected_categorie = get_object_or_404(Categorie, id=categorie_id)
+
     return render(request, 'tickets/client/creer_ticket.html', {
-        'categories': categories,
-        'priorities': priorities
+        'selected_categorie': selected_categorie,
+        'priorities': priorities,
     })
 
 @login_required
@@ -178,6 +193,7 @@ def detail_ticket(request, ticket_id):
         'pieces_jointes': pieces_jointes
     })
 
+@login_required
 def api_get_problemes(request):
     categorie_id = request.GET.get('categorie_id')
     if not categorie_id:

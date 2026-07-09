@@ -23,14 +23,14 @@
                     {% if user.is_client %}
                         <li class="nav-item {% block nav_dashboard_active %}{% endblock %}">
                             <a href="{% url 'client_dashboard' %}">
-                                <i data-lucide="layout-dashboard"></i>
-                                <span>Mes Tickets</span>
+                                <i data-lucide="plus-circle"></i>
+                                <span>Nouvelle demande</span>
                             </a>
                         </li>
-                        <li class="nav-item {% block nav_creer_active %}{% endblock %}">
-                            <a href="{% url 'creer_ticket' %}">
-                                <i data-lucide="plus-circle"></i>
-                                <span>Nouveau Ticket</span>
+                        <li class="nav-item {% block nav_tickets_active %}{% endblock %}">
+                            <a href="{% url 'client_tickets' %}">
+                                <i data-lucide="ticket"></i>
+                                <span>Mes tickets</span>
                             </a>
                         </li>
                     {% elif user.is_admin or user.is_technicien %}
@@ -48,19 +48,6 @@
                         </li>
                     {% endif %}
                     
-                    <li class="nav-item logout">
-                        <a href="{% url 'logout' %}">
-                            <i data-lucide="log-out"></i>
-                            <span>Déconnexion</span>
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="nav-item active">
-                        <a href="{% url 'login' %}">
-                            <i data-lucide="log-in"></i>
-                            <span>Connexion</span>
-                        </a>
-                    </li>
                 {% endif %}
             </ul>
         </aside>
@@ -74,13 +61,19 @@
                     <p>{% block page_subtitle %}Gestion des incidents et des demandes informatiques{% endblock %}</p>
                 </div>
                 
-                <div class="user-profile">
+                <div class="user-profile dropdown" tabindex="0">
                     <div class="avatar">
                         {{ user.username|slice:":2"|upper }}
                     </div>
                     <div class="user-info">
-                        <span class="username">{{ user.username }}</span>
+                        <span class="username">{{ user.username }} <i data-lucide="chevron-down" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i></span>
                         <span class="role">{{ user.role.libelle }}</span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'logout' %}" class="dropdown-item">
+                            <i data-lucide="log-out" style="width: 14px; height: 14px; color: #ef4444;"></i>
+                            <span style="color: #ef4444; font-weight: 500;">Déconnexion</span>
+                        </a>
                     </div>
                 </div>
             </header>

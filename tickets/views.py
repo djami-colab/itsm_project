@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Count
 from django.utils import timezone
 from .models import (
-    Role, Categorie, Probleme, Priorite, StatutTicket,
+    Role, Categorie, Probleme, Priorite, StatutTicket, SourceTicket,
     Ticket, PieceJointe, HistoriqueTicket, Utilisateur
 )
 
@@ -305,6 +305,7 @@ def admin_detail_ticket(request, ticket_id):
         
     ticket = get_object_or_404(Ticket, id=ticket_id)
     statuts = StatutTicket.objects.all()
+    sources = SourceTicket.objects.filter(actif=True).order_by('libelle')
     
     tech_role = Role.objects.get(libelle='Technicien')
     techniciens = Utilisateur.objects.filter(role=tech_role, is_active=True)
@@ -368,6 +369,30 @@ def admin_detail_ticket(request, ticket_id):
                 commentaire=comment_log
             )
             
+        # Action : Modifier la source du ticket
+        elif action == 'modifier_source':
+            source_id = request.POST.get('source')
+            nouvelle_source = get_object_or_404(SourceTicket, id=source_id) if source_id else None
+            
+            ancienne_source = ticket.source
+            ticket.source = nouvelle_source
+            ticket.save()
+            
+            ancienne_source_libelle = ancienne_source.libelle if ancienne_source else "Non définie"
+            nouvelle_source_libelle = nouvelle_source.libelle if nouvelle_source else "Non définie"
+            
+            comment_log = f"Source du ticket modifiée : {ancienne_source_libelle} → {nouvelle_source_libelle}."
+            if commentaire:
+                comment_log += f" Note: {commentaire}"
+                
+            HistoriqueTicket.objects.create(
+                ticket=ticket,
+                ancien_statut=ticket.statut,
+                nouveau_statut=ticket.statut,
+                modifie_par=request.user,
+                commentaire=comment_log
+            )
+        
         # Action : Ajouter un simple message/commentaire
         elif action == 'ajouter_commentaire':
             if commentaire:
@@ -397,6 +422,7 @@ def admin_detail_ticket(request, ticket_id):
     return render(request, 'tickets/admin/detail_ticket.html', {
         'ticket': ticket,
         'statuts': statuts,
+        'sources': sources,
         'techniciens': techniciens,
         'historiques': historiques,
         'pieces_jointes': pieces_jointes

@@ -55,6 +55,23 @@ class StatutTicket(models.Model):
     def __str__(self):
         return self.libelle
 
+class SourceTicket(models.Model):
+    SOURCES_CHOICES = [
+        ('portail', 'Portail Web'),
+        ('telephone', 'Téléphone'),
+        ('email', 'Email'),
+        ('chat', 'Chat en ligne'),
+        ('personne', 'En personne'),
+        ('autre', 'Autre'),
+    ]
+    
+    libelle = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    actif = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.libelle
+
 class Ticket(models.Model):
     utilisateur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, related_name='tickets_crees')
     categorie = models.ForeignKey(Categorie, on_delete=models.PROTECT, related_name='tickets')
@@ -62,6 +79,7 @@ class Ticket(models.Model):
     probleme_autre = models.TextField(null=True, blank=True)
     priorite = models.ForeignKey(Priorite, on_delete=models.PROTECT, related_name='tickets')
     statut = models.ForeignKey(StatutTicket, on_delete=models.PROTECT, related_name='tickets')
+    source = models.ForeignKey(SourceTicket, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets')
     technicien = models.ForeignKey(Utilisateur, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets_assignes')
     description = models.TextField(blank=True, default="")
     

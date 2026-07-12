@@ -186,14 +186,18 @@ body {
     border-radius: 0 0 20px 20px;
     border: none;
     box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
+    position: relative;
+    z-index: 1001;
+    overflow: hidden;
 }
 
 .page-title h1 {
     font-family: 'Outfit', sans-serif;
     font-size: 2rem;
-    font-weight: 400;
+    font-weight: 700;
     color: #ffffff;
     letter-spacing: -0.02em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .page-title p {
@@ -313,7 +317,8 @@ body {
 .menu-username {
     font-weight: 700;
     font-size: 1rem;
-    color: var(--text-primary);
+    color: #000000;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .menu-view-profile {
@@ -387,11 +392,7 @@ body {
     flex-shrink: 0;
 }
 
-.menu-username {
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: #0f172a;
-}
+
 
 .menu-role {
     font-size: 0.7rem;

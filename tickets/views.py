@@ -270,7 +270,12 @@ def admin_liste_tickets(request):
     tickets = Ticket.objects.all().order_by('-date_creation')
     
     if statut_filter:
-        tickets = tickets.filter(statut__id=statut_filter)
+        # Handle both ID and libellé (label) filters
+        if statut_filter.isdigit():
+            tickets = tickets.filter(statut__id=statut_filter)
+        else:
+            # Filter by statut libellé (from dashboard chart)
+            tickets = tickets.filter(statut__libelle=statut_filter)
     if categorie_filter:
         tickets = tickets.filter(categorie__id=categorie_filter)
     if technicien_filter:

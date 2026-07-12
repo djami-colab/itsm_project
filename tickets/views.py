@@ -106,6 +106,7 @@ def creer_ticket(request):
         categorie = get_object_or_404(Categorie, id=categorie_id)
         priorite = get_object_or_404(Priorite, id=priorite_id)
         statut_nouveau = get_object_or_404(StatutTicket, libelle='Nouveau')
+        source_portail = SourceTicket.objects.filter(libelle='Portail Web').first()
 
         probleme = None
         if probleme_id and probleme_id != 'autre':
@@ -118,6 +119,7 @@ def creer_ticket(request):
             probleme_autre=probleme_autre if not probleme else None,
             priorite=priorite,
             statut=statut_nouveau,
+            source=source_portail,
             description=description
         )
 

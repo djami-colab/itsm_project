@@ -3,8 +3,20 @@
 {% block title %}Gestion des Tickets - ITSM Portal{% endblock %}
 {% block nav_admin_tickets_active %}active{% endblock %}
 
-{% block page_title %}Tous les Incidents & Demandes{% endblock %}
-{% block page_subtitle %}Consultez, filtrez et gérez les demandes de support envoyées par les utilisateurs{% endblock %}
+{% block page_title %}
+    {% if request.GET.statut %}
+        Tickets - Statut: {% for st in statuts %}{% if st.id|stringformat:"i" == request.GET.statut or st.libelle == request.GET.statut %}{{ st.libelle }}{% endif %}{% endfor %}
+    {% else %}
+        Tous les Incidents & Demandes
+    {% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    {% if request.GET.statut %}
+        Liste des tickets filtrés par statut
+    {% else %}
+        Consultez, filtrez et gérez les demandes de support envoyées par les utilisateurs
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <!-- Filters card -->

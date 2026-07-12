@@ -143,7 +143,7 @@
             '#6b7280'  // Clôturé
         ];
 
-        new Chart(ctx, {
+        const chart = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: chartLabels,
@@ -159,6 +159,13 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const status = chartLabels[index];
+                        window.location.href = `/tickets/admin/tickets/?statut=${encodeURIComponent(status)}`;
+                    }
+                },
                 plugins: {
                     legend: {
                         position: 'right',
@@ -183,6 +190,9 @@
                 cutout: '65%'
             }
         });
+        
+        // Change cursor to pointer on hover
+        ctx.canvas.style.cursor = 'pointer';
     });
 </script>
 {% endblock %}

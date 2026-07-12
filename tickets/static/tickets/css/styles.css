@@ -245,8 +245,119 @@ body {
 }
 
 .menu-header {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+}
+
+.menu-username {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #0f172a;
+}
+
+.menu-role {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-top: 0.2rem;
+}
+
+.menu-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 0.5rem 0;
+}
+
+.menu-section {
+    padding: 0.5rem 1rem;
+}
+
+.menu-preferences-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.6rem;
+}
+
+.theme-controls {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.theme-btn {
+    flex: 1;
+    padding: 0.45rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    font-size: 0.875rem;
+}
+
+.theme-btn i {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2;
+}
+
+.theme-btn:hover {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.3);
+    color: #0f172a;
+}
+
+.theme-btn.active {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    text-decoration: none;
+    font-size: 0.875rem;
+    color: #0f172a;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    text-align: left;
+}
+
+.menu-item i {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.menu-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.menu-item.logout-item {
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.menu-item.logout-item i {
+    color: #ef4444;
+}
+
+.menu-item.logout-item:hover {
+    background: rgba(239, 68, 68, 0.08);
 }
 
 .menu-user-info {

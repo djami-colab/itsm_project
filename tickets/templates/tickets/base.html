@@ -65,15 +65,34 @@
                     <div class="avatar">
                         {{ user.username|slice:":2"|upper }}
                     </div>
-                    <div class="user-info">
-                        <span class="username">{{ user.username }} <i data-lucide="chevron-down" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i></span>
-                        <span class="role">{{ user.role.libelle }}</span>
-                    </div>
-                    <div class="dropdown-menu">
-                        <a href="{% url 'logout' %}" class="dropdown-item logout-btn">
-                            <i data-lucide="log-out"></i>
-                            <span>Déconnexion</span>
-                        </a>
+                    <div class="dropdown-menu minimal-menu">
+                        <div class="menu-header">
+                            <div class="menu-user-info">
+                                <div class="menu-avatar">{{ user.username|slice:":2"|upper }}</div>
+                                <div>
+                                    <div class="menu-username">{{ user.username }}</div>
+                                    <div class="menu-role">{{ user.role.libelle }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-divider"></div>
+                        
+                        <div class="menu-section">
+                            <button class="menu-item theme-toggle" id="themeToggle">
+                                <i data-lucide="moon"></i>
+                                <span>Thème sombre</span>
+                            </button>
+                        </div>
+                        
+                        <div class="menu-divider"></div>
+                        
+                        <div class="menu-section">
+                            <a href="{% url 'logout' %}" class="menu-item logout-item">
+                                <i data-lucide="log-out"></i>
+                                <span>Déconnexion</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -87,6 +106,40 @@
     <!-- Initialize Lucide Icons -->
     <script>
         lucide.createIcons();
+        
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function() {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+                localStorage.setItem('theme', isDark ? 'light' : 'dark');
+                
+                // Update icon and text
+                const icon = this.querySelector('i');
+                const text = this.querySelector('span');
+                if (!isDark) {
+                    icon.setAttribute('data-lucide', 'sun');
+                    text.textContent = 'Thème clair';
+                } else {
+                    icon.setAttribute('data-lucide', 'moon');
+                    text.textContent = 'Thème sombre';
+                }
+                lucide.createIcons();
+            });
+            
+            // Initialize theme on page load
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            if (savedTheme === 'dark') {
+                const icon = themeToggle.querySelector('i');
+                const text = themeToggle.querySelector('span');
+                icon.setAttribute('data-lucide', 'sun');
+                text.textContent = 'Thème clair';
+                lucide.createIcons();
+            }
+        }
     </script>
     {% block extra_js %}{% endblock %}
 </body>

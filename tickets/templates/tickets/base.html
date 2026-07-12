@@ -63,16 +63,24 @@
                 
                 <div class="user-profile dropdown" tabindex="0">
                     <div class="avatar">
-                        {{ user.username|slice:":2"|upper }}
+                        {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}
                     </div>
-                    <div class="user-info">
-                        <span class="username">{{ user.username }} <i data-lucide="chevron-down" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i></span>
-                        <span class="role">{{ user.role.libelle }}</span>
-                    </div>
-                    <div class="dropdown-menu">
-                        <a href="{% url 'logout' %}" class="dropdown-item">
-                            <i data-lucide="log-out" style="width: 14px; height: 14px; color: #ef4444;"></i>
-                            <span style="color: #ef4444; font-weight: 500;">Déconnexion</span>
+                    <div class="dropdown-menu minimal-menu">
+                        <div class="menu-header">
+                            <div class="menu-avatar-large">
+                                {% if user.first_name %}{{ user.first_name|slice:":1" }}{% else %}{{ user.username|slice:":1" }}{% endif %}
+                            </div>
+                            <div class="menu-user-details">
+                                <div class="menu-username">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</div>
+                                <a href="{% url 'user_profile' %}" class="menu-view-profile">Voir le profil</a>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-divider"></div>
+                        
+                        <a href="{% url 'logout' %}" class="menu-item-action logout-item">
+                            <i data-lucide="log-out"></i>
+                            <span>Déconnexion</span>
                         </a>
                     </div>
                 </div>
@@ -87,6 +95,36 @@
     <!-- Initialize Lucide Icons -->
     <script>
         lucide.createIcons();
+        
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        
+        function setTheme(isDark) {
+            const theme = isDark ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateThemeIcon();
+        }
+        
+        function updateThemeIcon() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (themeToggle) {
+                themeToggle.classList.toggle('dark-mode', isDark);
+                const icon = themeToggle.querySelector('i');
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                lucide.createIcons();
+            }
+        }
+        
+        themeToggle?.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            setTheme(!isDark);
+        });
+        
+        // Initialize theme on page load
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon();
     </script>
     {% block extra_js %}{% endblock %}
 </body>

@@ -429,3 +429,21 @@ def admin_detail_ticket(request, ticket_id):
         'historiques': historiques,
         'pieces_jointes': pieces_jointes
     })
+
+# ==================== PROFIL UTILISATEUR ====================
+
+@login_required
+def user_profile(request):
+    user = request.user
+    
+    if request.method == 'POST':
+        # Mise à jour du profil utilisateur
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+        user.save()
+        return redirect('user_profile')
+    
+    return render(request, 'tickets/profile.html', {
+        'user': user
+    })

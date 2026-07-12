@@ -73,16 +73,17 @@
                         
                         <div class="menu-divider"></div>
                         
+                        <a href="{% url 'user_profile' %}" class="menu-item">
+                            <i data-lucide="settings"></i>
+                            <span>Paramètres</span>
+                        </a>
+                        
+                        <div class="menu-divider"></div>
+                        
                         <div class="menu-section">
                             <div class="menu-preferences-label">Thème</div>
-                            <div class="theme-controls">
-                                <button class="theme-btn" id="themeLightBtn" data-theme="light" title="Clair">
-                                    <i data-lucide="sun"></i>
-                                </button>
-                                <button class="theme-btn" id="themeAutoBtn" data-theme="auto" title="Auto">
-                                    <i data-lucide="monitor"></i>
-                                </button>
-                                <button class="theme-btn" id="themeDarkBtn" data-theme="dark" title="Sombre">
+                            <div class="theme-toggle-container">
+                                <button class="theme-toggle" id="themeToggle">
                                     <i data-lucide="moon"></i>
                                 </button>
                             </div>
@@ -108,34 +109,35 @@
     <script>
         lucide.createIcons();
         
-        // Theme Toggle Buttons
-        const themeLightBtn = document.getElementById('themeLightBtn');
-        const themeAutoBtn = document.getElementById('themeAutoBtn');
-        const themeDarkBtn = document.getElementById('themeDarkBtn');
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
         
-        function setTheme(theme) {
+        function setTheme(isDark) {
+            const theme = isDark ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
-            updateThemeButtons(theme);
+            updateThemeIcon();
         }
         
-        function updateThemeButtons(theme) {
-            [themeLightBtn, themeAutoBtn, themeDarkBtn].forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            if (theme === 'light') themeLightBtn.classList.add('active');
-            else if (theme === 'auto') themeAutoBtn.classList.add('active');
-            else if (theme === 'dark') themeDarkBtn.classList.add('active');
+        function updateThemeIcon() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (themeToggle) {
+                themeToggle.classList.toggle('dark-mode', isDark);
+                const icon = themeToggle.querySelector('i');
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                lucide.createIcons();
+            }
         }
         
-        themeLightBtn?.addEventListener('click', () => setTheme('light'));
-        themeAutoBtn?.addEventListener('click', () => setTheme('auto'));
-        themeDarkBtn?.addEventListener('click', () => setTheme('dark'));
+        themeToggle?.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            setTheme(!isDark);
+        });
         
         // Initialize theme on page load
         const savedTheme = localStorage.getItem('theme') || 'light';
-        updateThemeButtons(savedTheme);
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon();
     </script>
     {% block extra_js %}{% endblock %}
 </body>

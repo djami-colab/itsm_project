@@ -435,6 +435,7 @@ def admin_detail_ticket(request, ticket_id):
 @login_required
 def user_profile(request):
     user = request.user
+    message = None
     
     if request.method == 'POST':
         # Mise à jour du profil utilisateur
@@ -442,8 +443,9 @@ def user_profile(request):
         user.last_name = request.POST.get('last_name', user.last_name)
         user.email = request.POST.get('email', user.email)
         user.save()
-        return redirect('user_profile')
+        message = "Profil mis à jour avec succès!"
     
     return render(request, 'tickets/profile.html', {
-        'user': user
+        'user': user,
+        'message': message
     })

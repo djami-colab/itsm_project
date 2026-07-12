@@ -63,11 +63,11 @@
                 
                 <div class="user-profile dropdown" tabindex="0">
                     <div class="avatar">
-                        {{ user.username|slice:":2"|upper }}
+                        {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}
                     </div>
                     <div class="dropdown-menu minimal-menu">
                         <div class="menu-header">
-                            <div class="menu-username">{{ user.username }}</div>
+                            <div class="menu-username">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</div>
                             <div class="menu-role">{{ user.role.libelle }}</div>
                         </div>
                         
@@ -81,9 +81,8 @@
                         <div class="menu-divider"></div>
                         
                         <div class="menu-section">
-                            <div class="menu-preferences-label">Thème</div>
                             <div class="theme-toggle-container">
-                                <button class="theme-toggle" id="themeToggle">
+                                <button class="theme-toggle" id="themeToggle" title="Basculer le thème">
                                     <i data-lucide="moon"></i>
                                 </button>
                             </div>

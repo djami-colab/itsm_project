@@ -186,6 +186,9 @@ body {
     border-radius: 0 0 20px 20px;
     border: none;
     box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
+    position: relative;
+    z-index: 1001;
+    overflow: hidden;
 }
 
 .page-title h1 {
@@ -313,7 +316,7 @@ body {
 .menu-username {
     font-weight: 700;
     font-size: 1rem;
-    color: var(--text-primary);
+    color: #0f172a;
 }
 
 .menu-view-profile {

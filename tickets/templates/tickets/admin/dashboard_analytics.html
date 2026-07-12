@@ -9,7 +9,7 @@
 {% block content %}
 <!-- Analytics Overview Cards -->
 <div class="stats-grid">
-    <div class="card stat-card">
+    <button class="card stat-card" style="border: none; cursor: pointer; transition: all 0.3s ease; text-align: left; background: inherit;" onclick="loadTicketsFilter(null)">
         <div class="stat-info">
             <span class="stat-label">Tickets Totaux</span>
             <div class="stat-value">{{ total_tickets }}</div>
@@ -17,9 +17,9 @@
         <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
             <i data-lucide="ticket"></i>
         </div>
-    </div>
+    </button>
     
-    <div class="card stat-card">
+    <button class="card stat-card" style="border: none; cursor: pointer; transition: all 0.3s ease; text-align: left; background: inherit;" onclick="loadTicketsFilter('Nouveau')">
         <div class="stat-info">
             <span class="stat-label">En Attente (Nouveaux)</span>
             <div class="stat-value" style="color: var(--status-nouveau);">{{ nouveaux_tickets }}</div>
@@ -27,15 +27,31 @@
         <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--status-nouveau);">
             <i data-lucide="bell"></i>
         </div>
-    </div>
+    </button>
     
-    <div class="card stat-card">
+    <button class="card stat-card" style="border: none; cursor: pointer; transition: all 0.3s ease; text-align: left; background: inherit;" onclick="loadTicketsFilter('Résolu')">
         <div class="stat-info">
             <span class="stat-label">Résolus</span>
             <div class="stat-value" style="color: var(--status-resolu);">{{ resolus_tickets }}</div>
         </div>
         <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--status-resolu);">
             <i data-lucide="shield-check"></i>
+        </div>
+    </button>
+</div>
+
+<!-- Tickets List Modal Section -->
+<div id="ticketsListContainer" style="display: none; margin-top: 2rem;">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; flex: 1;">
+                <i data-lucide="list" style="vertical-align: middle; margin-right: 0.5rem;"></i>
+                <span id="ticketsListTitle">Tickets filtrés</span>
+            </h2>
+            <button onclick="closeTicketsList()" style="background: none; border: none; cursor: pointer; font-size: 1.5rem;">×</button>
+        </div>
+        <div id="ticketsListContent" style="overflow-x: auto;">
+            <!-- Will be populated via AJAX -->
         </div>
     </div>
 </div>
@@ -191,8 +207,58 @@
             }
         });
         
-        // Change cursor to pointer on hover
-        ctx.canvas.style.cursor = 'pointer';
+    // Change cursor to pointer on hover
+    ctx.canvas.style.cursor = 'pointer';
+});
+
+// Function to load tickets filtered by status without redirecting
+function loadTicketsFilter(status) {
+    const container = document.getElementById('ticketsListContainer');
+    const titleSpan = document.getElementById('ticketsListTitle');
+    const contentDiv = document.getElementById('ticketsListContent');
+    
+    // Show loading state
+    contentDiv.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Chargement...</p>';
+    container.style.display = 'block';
+    
+    // Build URL
+    let url = '/admin/tickets/';
+    if (status) {
+        url += '?statut=' + encodeURIComponent(status);
+        titleSpan.textContent = 'Tickets - Statut: ' + status;
+    } else {
+        titleSpan.textContent = 'Tous les Tickets';
+    }
+    
+    // Fetch the page
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            // Parse the HTML to extract the table
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Find the table in the fetched content
+            const table = doc.querySelector('.custom-table');
+            if (table) {
+                contentDiv.innerHTML = table.outerHTML;
+                lucide.createIcons();
+            } else {
+                contentDiv.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Aucun ticket trouvé.</p>';
+            }
+            
+            // Scroll to the list
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement:', error);
+            contentDiv.innerHTML = '<p style="text-align: center; color: #ef4444;">Erreur lors du chargement des tickets.</p>';
+        });
+}
+
+function closeTicketsList() {
+    document.getElementById('ticketsListContainer').style.display = 'none';
+
     });
 </script>
 {% endblock %}

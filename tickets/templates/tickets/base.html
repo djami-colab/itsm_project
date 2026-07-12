@@ -67,32 +67,33 @@
                     </div>
                     <div class="dropdown-menu minimal-menu">
                         <div class="menu-header">
-                            <div class="menu-user-info">
-                                <div class="menu-avatar">{{ user.username|slice:":2"|upper }}</div>
-                                <div>
-                                    <div class="menu-username">{{ user.username }}</div>
-                                    <div class="menu-role">{{ user.role.libelle }}</div>
-                                </div>
+                            <div class="menu-username">{{ user.username }}</div>
+                            <div class="menu-role">{{ user.role.libelle }}</div>
+                        </div>
+                        
+                        <div class="menu-divider"></div>
+                        
+                        <div class="menu-section">
+                            <div class="menu-preferences-label">Thème</div>
+                            <div class="theme-controls">
+                                <button class="theme-btn" id="themeLightBtn" data-theme="light" title="Clair">
+                                    <i data-lucide="sun"></i>
+                                </button>
+                                <button class="theme-btn" id="themeAutoBtn" data-theme="auto" title="Auto">
+                                    <i data-lucide="monitor"></i>
+                                </button>
+                                <button class="theme-btn" id="themeDarkBtn" data-theme="dark" title="Sombre">
+                                    <i data-lucide="moon"></i>
+                                </button>
                             </div>
                         </div>
                         
                         <div class="menu-divider"></div>
                         
-                        <div class="menu-section">
-                            <button class="menu-item theme-toggle" id="themeToggle">
-                                <i data-lucide="moon"></i>
-                                <span>Thème sombre</span>
-                            </button>
-                        </div>
-                        
-                        <div class="menu-divider"></div>
-                        
-                        <div class="menu-section">
-                            <a href="{% url 'logout' %}" class="menu-item logout-item">
-                                <i data-lucide="log-out"></i>
-                                <span>Déconnexion</span>
-                            </a>
-                        </div>
+                        <a href="{% url 'logout' %}" class="menu-item logout-item">
+                            <i data-lucide="log-out"></i>
+                            <span>Déconnexion</span>
+                        </a>
                     </div>
                 </div>
             </header>
@@ -107,39 +108,34 @@
     <script>
         lucide.createIcons();
         
-        // Theme Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', function() {
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-                localStorage.setItem('theme', isDark ? 'light' : 'dark');
-                
-                // Update icon and text
-                const icon = this.querySelector('i');
-                const text = this.querySelector('span');
-                if (!isDark) {
-                    icon.setAttribute('data-lucide', 'sun');
-                    text.textContent = 'Thème clair';
-                } else {
-                    icon.setAttribute('data-lucide', 'moon');
-                    text.textContent = 'Thème sombre';
-                }
-                lucide.createIcons();
+        // Theme Toggle Buttons
+        const themeLightBtn = document.getElementById('themeLightBtn');
+        const themeAutoBtn = document.getElementById('themeAutoBtn');
+        const themeDarkBtn = document.getElementById('themeDarkBtn');
+        
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateThemeButtons(theme);
+        }
+        
+        function updateThemeButtons(theme) {
+            [themeLightBtn, themeAutoBtn, themeDarkBtn].forEach(btn => {
+                btn.classList.remove('active');
             });
             
-            // Initialize theme on page load
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            
-            if (savedTheme === 'dark') {
-                const icon = themeToggle.querySelector('i');
-                const text = themeToggle.querySelector('span');
-                icon.setAttribute('data-lucide', 'sun');
-                text.textContent = 'Thème clair';
-                lucide.createIcons();
-            }
+            if (theme === 'light') themeLightBtn.classList.add('active');
+            else if (theme === 'auto') themeAutoBtn.classList.add('active');
+            else if (theme === 'dark') themeDarkBtn.classList.add('active');
         }
+        
+        themeLightBtn?.addEventListener('click', () => setTheme('light'));
+        themeAutoBtn?.addEventListener('click', () => setTheme('auto'));
+        themeDarkBtn?.addEventListener('click', () => setTheme('dark'));
+        
+        // Initialize theme on page load
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        updateThemeButtons(savedTheme);
     </script>
     {% block extra_js %}{% endblock %}
 </body>

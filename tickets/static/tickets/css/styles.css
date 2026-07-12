@@ -215,22 +215,28 @@ body {
 }
 
 .dropdown-menu {
-    position: absolute;
-    top: calc(100% + 0.8rem);
-    right: 0;
-    background: rgba(255, 255, 255, 0.92);
+    position: fixed;
+    top: 65px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    min-width: 200px;
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+    min-width: 240px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-8px) scale(0.95);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 1000;
-    overflow: hidden;
+    z-index: 9999;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.dropdown-menu.minimal-menu {
+    overflow-y: auto;
+    max-height: 90vh;
 }
 
 .user-profile.dropdown:hover .dropdown-menu,
@@ -238,6 +244,7 @@ body {
     opacity: 1;
     visibility: visible;
     transform: translateY(0) scale(1);
+    pointer-events: auto;
 }
 
 .dropdown-menu.minimal-menu {
@@ -277,19 +284,21 @@ body {
     color: var(--text-secondary);
     font-weight: 600;
     letter-spacing: 0.5px;
-    margin-bottom: 0.6rem;
-}
-
-.theme-controls {
+    margin-bottom: 0.5rem;
     display: flex;
-    gap: 0.4rem;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.theme-btn {
-    flex: 1;
-    padding: 0.45rem;
+.theme-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.theme-toggle {
+    padding: 0.4rem 0.6rem;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.6);
     border-radius: 6px;
     cursor: pointer;
     color: var(--text-secondary);
@@ -301,22 +310,22 @@ body {
     font-size: 0.875rem;
 }
 
-.theme-btn i {
-    width: 14px;
-    height: 14px;
-    stroke-width: 2;
+.theme-toggle i {
+    width: 16px;
+    height: 16px;
+    stroke-width: 1.5;
 }
 
-.theme-btn:hover {
-    background: rgba(99, 102, 241, 0.08);
+.theme-toggle:hover {
+    background: rgba(99, 102, 241, 0.1);
     border-color: rgba(99, 102, 241, 0.3);
     color: #0f172a;
 }
 
-.theme-btn.active {
+.theme-toggle.dark-mode {
+    color: var(--primary);
     background: rgba(99, 102, 241, 0.12);
     border-color: var(--primary);
-    color: var(--primary);
 }
 
 .menu-item {

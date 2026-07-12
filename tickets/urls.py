@@ -5,6 +5,7 @@ urlpatterns = [
     path('', views.dashboard_redirect, name='dashboard'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.user_profile, name='user_profile'),
     
     # Client Portal
     path('client/dashboard/', views.client_dashboard, name='client_dashboard'),

@@ -67,30 +67,31 @@
                     </div>
                     <div class="dropdown-menu minimal-menu">
                         <div class="menu-header">
-                            <div class="menu-username">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</div>
-                            <div class="menu-role">{{ user.role.libelle }}</div>
+                            <div class="menu-avatar-large">
+                                {% if user.first_name %}{{ user.first_name|slice:":1" }}{% else %}{{ user.username|slice:":1" }}{% endif %}
+                            </div>
+                            <div class="menu-user-details">
+                                <div class="menu-username">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</div>
+                                <a href="{% url 'user_profile' %}" class="menu-view-profile">Voir le profil</a>
+                            </div>
                         </div>
                         
                         <div class="menu-divider"></div>
                         
-                        <a href="{% url 'user_profile' %}" class="menu-item">
-                            <i data-lucide="settings"></i>
-                            <span>Paramètres</span>
-                        </a>
-                        
-                        <div class="menu-divider"></div>
-                        
-                        <div class="menu-section">
-                            <div class="theme-toggle-container">
-                                <button class="theme-toggle" id="themeToggle" title="Basculer le thème">
+                        <div class="menu-items-section">
+                            <div class="menu-section-label">Préférences</div>
+                            <div class="menu-item-group">
+                                <button class="menu-item-row theme-toggle" id="themeToggle" title="Basculer le thème">
                                     <i data-lucide="moon"></i>
+                                    <span class="menu-item-label">Thème</span>
+                                    <span class="menu-item-toggle"></span>
                                 </button>
                             </div>
                         </div>
                         
                         <div class="menu-divider"></div>
                         
-                        <a href="{% url 'logout' %}" class="menu-item logout-item">
+                        <a href="{% url 'logout' %}" class="menu-item-action logout-item">
                             <i data-lucide="log-out"></i>
                             <span>Déconnexion</span>
                         </a>

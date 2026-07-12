@@ -7,22 +7,124 @@
 {% block page_subtitle %}Modifiez l'affectation, changez le statut, et communiquez avec l'utilisateur{% endblock %}
 
 {% block content %}
+<style>
+    .ticket-tabs-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .ticket-tabs-header {
+        display: flex;
+        gap: 0.5rem;
+        border-bottom: 2px solid var(--border-color);
+        padding: 0 1rem;
+        overflow-x: auto;
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .ticket-tab-button {
+        padding: 1rem 1.5rem;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        border-bottom: 3px solid transparent;
+        transition: var(--transition);
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .ticket-tab-button:hover {
+        color: var(--text-primary);
+        background: rgba(99, 102, 241, 0.05);
+    }
+
+    .ticket-tab-button.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+        background: rgba(99, 102, 241, 0.08);
+    }
+
+    .ticket-tab-content {
+        display: none;
+        overflow-y: auto;
+        padding: 2rem;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .ticket-tab-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .tab-content-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        max-width: 100%;
+    }
+
+    @media (min-width: 1024px) {
+        .tab-content-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .tab-content-grid.full-width {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 <div style="margin-bottom: 1.5rem;">
     <a href="{% url 'admin_liste_tickets' %}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
         <i data-lucide="arrow-left"></i> Retour à la liste
     </a>
 </div>
 
-<div class="ticket-grid">
-    <!-- Left Column: Discussion & Timeline -->
-    <div>
+<div class="ticket-tabs-container">
+    <!-- Tabs Navigation -->
+    <div class="ticket-tabs-header">
+        <button class="ticket-tab-button active" data-tab="historique">
+            <i data-lucide="history" style="width: 18px; height: 18px;"></i>
+            Historique & Discussion
+        </button>
+        <button class="ticket-tab-button" data-tab="infos">
+            <i data-lucide="info" style="width: 18px; height: 18px;"></i>
+            Informations
+        </button>
+        <button class="ticket-tab-button" data-tab="pieces">
+            <i data-lucide="paperclip" style="width: 18px; height: 18px;"></i>
+            Pièces Jointes
+        </button>
+        <button class="ticket-tab-button" data-tab="admin">
+            <i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i>
+            Administration
+        </button>
+    </div>
+
+    <!-- Tab 1: Historique & Discussion -->
+    <div class="ticket-tab-content active" data-tab="historique">
         <div class="card">
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
                 <i data-lucide="message-square" style="vertical-align: middle; margin-right: 0.5rem;"></i>
                 Fil de discussion & Historique technique
             </h2>
 
-            <div class="timeline">
+            <div class="timeline" style="margin-bottom: 2rem;">
                 {% for hist in historiques %}
                 <div class="timeline-item">
                     <div class="timeline-icon" style="border-color: 
@@ -54,14 +156,14 @@
             </div>
 
             <!-- Comment Editor -->
-            <div class="comment-editor" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.5rem;">
+            <div class="comment-editor" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
                 <h3 style="font-size: 1rem; margin-bottom: 1rem;">Répondre à l'utilisateur / Ajouter une note interne</h3>
                 <form method="POST" action="{% url 'admin_detail_ticket' ticket.id %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="ajouter_commentaire">
                     
                     <div class="form-group">
-                        <textarea name="commentaire" class="form-control" placeholder="Saisissez votre commentaire..." required></textarea>
+                        <textarea name="commentaire" class="form-control" placeholder="Saisissez votre commentaire..." required style="min-height: 120px;"></textarea>
                     </div>
 
                     <div class="form-group">
@@ -79,153 +181,86 @@
         </div>
     </div>
 
-    <!-- Right Column: Control Panel -->
-    <div>
-        <!-- Quick Actions Panel -->
-        <div class="card" style="border-color: rgba(99, 102, 241, 0.2);">
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; color: var(--primary);">
-                <i data-lucide="shield-alert" style="vertical-align: middle; margin-right: 0.5rem;"></i>
-                Panneau d'administration
-            </h2>
-
-            <!-- 1. Form Assigner Technicien -->
-            <form method="POST" action="{% url 'admin_detail_ticket' ticket.id %}" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="assigner">
-                
-                <div class="form-group">
-                    <label for="technicien" class="form-label">Assigner à un technicien</label>
-                    <select name="technicien" id="technicien" class="form-control" required>
-                        <option value="" disabled {% if not ticket.technicien %}selected{% endif %}>Sélectionner un technicien...</option>
-                        {% for tech in techniciens %}
-                        <option value="{{ tech.id }}" {% if ticket.technicien.id == tech.id %}selected{% endif %}>{{ tech.username }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="assign_comment" class="form-label" style="font-size: 0.8rem; color: var(--text-secondary);">Commentaire (Optionnel)</label>
-                    <input type="text" name="commentaire" id="assign_comment" class="form-control" placeholder="Ajouter une instruction technique...">
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <i data-lucide="user-plus"></i> Valider l'affectation
-                </button>
-            </form>
-
-            <!-- 2. Form Changer Statut -->
-            <form method="POST" action="{% url 'admin_detail_ticket' ticket.id %}" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="changer_statut">
-                
-                <div class="form-group">
-                    <label for="statut" class="form-label">Modifier le Statut</label>
-                    <select name="statut" id="statut" class="form-control" required>
-                        {% for st in statuts %}
-                        <option value="{{ st.id }}" {% if ticket.statut.id == st.id %}selected{% endif %}>{{ st.libelle }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="status_comment" class="form-label" style="font-size: 0.8rem; color: var(--text-secondary);">Commentaire (Recommandé)</label>
-                    <input type="text" name="commentaire" id="status_comment" class="form-control" placeholder="Raison du changement de statut...">
-                </div>
-
-                <button type="submit" class="btn btn-secondary" style="width: 100%; border-color: var(--primary);">
-                    <i data-lucide="refresh-cw"></i> Changer le Statut
-                </button>
-            </form>
-
-            <!-- 3. Form Modifier Source Ticket -->
-            <form method="POST" action="{% url 'admin_detail_ticket' ticket.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="modifier_source">
-                
-                <div class="form-group">
-                    <label class="form-label" style="font-weight: 600; margin-bottom: 1rem; display: block;">Source du Ticket</label>
-                    
-                    <!-- Source Selection with Checkboxes -->
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(99, 102, 241, 0.03); padding: 1rem; border-radius: var(--border-radius-sm); border: 1px solid rgba(99, 102, 241, 0.08);">
-                        {% for src in sources %}
-                        <label class="checkbox-label" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: var(--transition);">
-                            <input type="radio" name="source" value="{{ src.id }}" {% if ticket.source.id == src.id %}checked{% endif %} style="cursor: pointer;">
-                            <span style="flex: 1;">
-                                <strong style="color: #0f172a;">{{ src.libelle }}</strong>
-                                {% if src.description %}
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ src.description }}</div>
-                                {% endif %}
-                            </span>
-                        </label>
-                        {% endfor %}
+    <!-- Tab 2: Informations du Ticket -->
+    <div class="ticket-tab-content" data-tab="infos">
+        <div class="tab-content-grid full-width">
+            <!-- Ticket Info Summary -->
+            <div class="card">
+                <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                    <i data-lucide="user" style="vertical-align: middle; margin-right: 0.5rem;"></i>
+                    Informations Demandeur
+                </h2>
+                <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div>
+                        <span style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Client</span>
+                        <p style="margin-top: 0.25rem;"><strong>{{ ticket.utilisateur.username }}</strong></p>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="source_comment" class="form-label" style="font-size: 0.8rem; color: var(--text-secondary);">Commentaire (Optionnel)</label>
-                    <input type="text" name="commentaire" id="source_comment" class="form-control" placeholder="Détails supplémentaires...">
-                </div>
-
-                <button type="submit" class="btn btn-secondary" style="width: 100%; border-color: var(--primary);">
-                    <i data-lucide="edit-2"></i> Mettre à jour la Source
-                </button>
-            </form>
-        </div>
-
-        <!-- Ticket Info Summary -->
-        <div class="card">
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-                <i data-lucide="user" style="vertical-align: middle; margin-right: 0.5rem;"></i>
-                Informations Demandeur
-            </h2>
-            <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                <p><span style="color: var(--text-secondary);">Client :</span> <strong>{{ ticket.utilisateur.username }}</strong></p>
-                <p><span style="color: var(--text-secondary);">Email :</span> <a href="mailto:{{ ticket.utilisateur.email }}" style="color: var(--primary); text-decoration: none;">{{ ticket.utilisateur.email }}</a></p>
-                <p><span style="color: var(--text-secondary);">Compte créé le :</span> {{ ticket.utilisateur.date_joined|date:"d/m/Y" }}</p>
-            </div>
-        </div>
-
-        <!-- Details Box -->
-        <div class="card">
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-                <i data-lucide="info" style="vertical-align: middle; margin-right: 0.5rem;"></i>
-                Détails du problème
-            </h2>
-            <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.75rem;">
-                <p><span style="color: var(--text-secondary); display:block; font-size:0.75rem;">CATÉGORIE</span> <strong>{{ ticket.categorie.libelle }}</strong></p>
-                <p><span style="color: var(--text-secondary); display:block; font-size:0.75rem;">INCIDENT</span> 
-                    <strong>
-                        {% if ticket.probleme %}
-                            {{ ticket.probleme.libelle }}
-                        {% else %}
-                            {{ ticket.probleme_autre }}
-                        {% endif %}
-                    </strong>
-                </p>
-                <p><span style="color: var(--text-secondary); display:block; font-size:0.75rem;">PRIORITÉ</span> 
-                    <span class="badge badge-prio-{{ ticket.priorite.libelle|lower }}">{{ ticket.priorite.libelle }}</span>
-                </p>
-                <p><span style="color: var(--text-secondary); display:block; font-size:0.75rem;">SOURCE</span> 
-                    <strong>
-                        {% if ticket.source %}
-                            {{ ticket.source.libelle }}
-                        {% else %}
-                            <span style="color: var(--text-muted); font-style: italic;">Non définie</span>
-                        {% endif %}
-                    </strong>
-                </p>
-                <div style="border-top: 1px solid var(--border-color); padding-top: 0.75rem; margin-top: 0.5rem;">
-                    <span style="color: var(--text-secondary); display:block; font-size:0.75rem; margin-bottom: 0.25rem;">DESCRIPTION ORIGINALE</span>
-                    <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--border-radius-sm); color: var(--text-secondary); line-height: 1.4; word-break: break-word;">
-                        {{ ticket.description|linebreaksbr }}
+                    <div>
+                        <span style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Email</span>
+                        <p style="margin-top: 0.25rem;"><a href="mailto:{{ ticket.utilisateur.email }}" style="color: var(--primary); text-decoration: none;">{{ ticket.utilisateur.email }}</a></p>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Compte créé</span>
+                        <p style="margin-top: 0.25rem;">{{ ticket.utilisateur.date_joined|date:"d/m/Y" }}</p>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Attachments Card -->
+            <!-- Details Box -->
+            <div class="card">
+                <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                    <i data-lucide="info" style="vertical-align: middle; margin-right: 0.5rem;"></i>
+                    Détails du problème
+                </h2>
+                <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div>
+                        <span style="color: var(--text-secondary); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Catégorie</span>
+                        <strong>{{ ticket.categorie.libelle }}</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-secondary); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Incident</span>
+                        <strong>
+                            {% if ticket.probleme %}
+                                {{ ticket.probleme.libelle }}
+                            {% else %}
+                                {{ ticket.probleme_autre }}
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-secondary); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Priorité</span>
+                        <span class="badge badge-prio-{{ ticket.priorite.libelle|lower }}">{{ ticket.priorite.libelle }}</span>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-secondary); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Source</span>
+                        <strong>
+                            {% if ticket.source %}
+                                {{ ticket.source.libelle }}
+                            {% else %}
+                                <span style="color: var(--text-muted); font-style: italic;">Non définie</span>
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Card -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                    <i data-lucide="file-text" style="vertical-align: middle; margin-right: 0.5rem;"></i>
+                    Description originale du problème
+                </h2>
+                <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--border-radius-sm); color: var(--text-secondary); line-height: 1.6; word-break: break-word;">
+                    {{ ticket.description|linebreaksbr }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 3: Pièces Jointes -->
+    <div class="ticket-tab-content" data-tab="pieces">
         <div class="card">
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
                 <i data-lucide="paperclip" style="vertical-align: middle; margin-right: 0.5rem;"></i>
                 Pièces Jointes ({{ pieces_jointes.count }})
             </h2>
@@ -234,18 +269,149 @@
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 {% for pj in pieces_jointes %}
                 <a href="{{ pj.fichier.url }}" download class="attachment-badge" style="display: flex; width: 100%; border-radius: var(--border-radius-sm); padding: 0.75rem;">
-                    <i data-lucide="download" style="width: 16px; height: 16px; color: var(--primary);"></i>
-                    <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; flex: 1;">
-                        <span style="display: block; color: #fff; font-size: 0.85rem;">{{ pj.nom_original }}</span>
+                    <i data-lucide="download" style="width: 16px; height: 16px; color: var(--primary); flex-shrink: 0; margin-right: 0.75rem;"></i>
+                    <div style="overflow: hidden; text-align: left; flex: 1;">
+                        <span style="display: block; color: #fff; font-size: 0.85rem; text-overflow: ellipsis; overflow: hidden;">{{ pj.nom_original }}</span>
                         <span style="font-size: 0.75rem; color: var(--text-muted);">Par {{ pj.uploaded_by.username }} le {{ pj.date_upload|date:"d/m H:i" }}</span>
                     </div>
                 </a>
                 {% endfor %}
             </div>
             {% else %}
-            <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; text-align: center; padding: 1rem 0;">Aucun fichier joint.</p>
+            <div style="text-align: center; padding: 2rem 1rem;">
+                <i data-lucide="inbox" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.5;"></i>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Aucun fichier joint.</p>
+            </div>
             {% endif %}
         </div>
     </div>
+
+    <!-- Tab 4: Administration -->
+    <div class="ticket-tab-content" data-tab="admin">
+        <div style="max-width: 100%; display: grid; gap: 1.5rem;">
+            <!-- Quick Actions Panel -->
+            <div class="card" style="border-color: rgba(99, 102, 241, 0.2);">
+                <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; color: var(--primary);">
+                    <i data-lucide="shield-alert" style="vertical-align: middle; margin-right: 0.5rem;"></i>
+                    Actions d'administration
+                </h2>
+
+                <!-- 1. Form Assigner Technicien -->
+                <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 2rem;">
+                    <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--primary);">Assigner un technicien</h3>
+                    <form method="POST" action="{% url 'admin_detail_ticket' ticket.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="assigner">
+                        
+                        <div class="form-group">
+                            <label for="technicien" class="form-label">Sélectionner un technicien</label>
+                            <select name="technicien" id="technicien" class="form-control" required>
+                                <option value="" disabled {% if not ticket.technicien %}selected{% endif %}>Choisir un technicien...</option>
+                                {% for tech in techniciens %}
+                                <option value="{{ tech.id }}" {% if ticket.technicien.id == tech.id %}selected{% endif %}>{{ tech.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="assign_comment" class="form-label" style="font-size: 0.8rem; color: var(--text-secondary);">Commentaire (Optionnel)</label>
+                            <input type="text" name="commentaire" id="assign_comment" class="form-control" placeholder="Ajouter une instruction technique...">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <i data-lucide="user-plus"></i> Valider l'affectation
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 2. Form Changer Statut -->
+                <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 2rem;">
+                    <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--primary);">Modifier le statut</h3>
+                    <form method="POST" action="{% url 'admin_detail_ticket' ticket.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="changer_statut">
+                        
+                        <div class="form-group">
+                            <label for="statut" class="form-label">Nouveau statut</label>
+                            <select name="statut" id="statut" class="form-control" required>
+                                {% for st in statuts %}
+                                <option value="{{ st.id }}" {% if ticket.statut.id == st.id %}selected{% endif %}>{{ st.libelle }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status_comment" class="form-label" style="font-size: 0.8rem; color: var(--text-secondary);">Commentaire (Recommandé)</label>
+                            <input type="text" name="commentaire" id="status_comment" class="form-control" placeholder="Raison du changement de statut...">
+                        </div>
+
+                        <button type="submit" class="btn btn-secondary" style="width: 100%; border-color: var(--primary);">
+                            <i data-lucide="refresh-cw"></i> Changer le Statut
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 3. Form Modifier Source Ticket -->
+                <div>
+                    <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--primary);">Modifier la source</h3>
+                    <form method="POST" action="{% url 'admin_detail_ticket' ticket.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="modifier_source">
+                        
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 1rem; display: block;">Source du Ticket</label>
+                            
+                            <!-- Source Selection with Radios -->
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(99, 102, 241, 0.03); padding: 1rem; border-radius: var(--border-radius-sm); border: 1px solid rgba(99, 102, 241, 0.08);">
+                                {% for src in sources %}
+                                <label class="checkbox-label" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: var(--transition);">
+                                    <input type="radio" name="source" value="{{ src.id }}" {% if ticket.source.id == src.id %}checked{% endif %} style="cursor: pointer;">
+                                    <span style="flex: 1;">
+                                        <strong style="color: #0f172a;">{{ src.libelle }}</strong>
+                                        {% if src.description %}
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ src.description }}</div>
+                                        {% endif %}
+                                    </span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="source_comment" class="form-label" style="font-size: 0.8rem; color: var(--text-secondary);">Commentaire (Optionnel)</label>
+                            <input type="text" name="commentaire" id="source_comment" class="form-control" placeholder="Détails supplémentaires...">
+                        </div>
+
+                        <button type="submit" class="btn btn-secondary" style="width: 100%; border-color: var(--primary);">
+                            <i data-lucide="edit-2"></i> Mettre à jour la Source
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    // Tab switching functionality
+    document.querySelectorAll('.ticket-tab-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            
+            // Hide all tabs
+            document.querySelectorAll('.ticket-tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Deactivate all buttons
+            document.querySelectorAll('.ticket-tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.querySelector(`[data-tab="${tabName}"].ticket-tab-content`).classList.add('active');
+            this.classList.add('active');
+        });
+    });
+</script>
 {% endblock %}

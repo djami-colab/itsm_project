@@ -180,21 +180,24 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 3rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
+    margin: -1rem -1.5rem 3rem -1.5rem;
+    padding: 1.5rem 1.5rem;
+    background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+    border-radius: 0 0 20px 20px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
 }
 
 .page-title h1 {
     font-family: 'Outfit', sans-serif;
     font-size: 2rem;
     font-weight: 400;
-    color: #0f172a;
+    color: #ffffff;
     letter-spacing: -0.02em;
 }
 
 .page-title p {
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.85);
     font-size: 0.9rem;
     font-weight: 300;
     margin-top: 0.25rem;
@@ -255,7 +258,7 @@ body {
     visibility: hidden;
     transform: translateY(-8px) scale(0.95);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 9999;
+    z-index: 99999;
     overflow: visible;
     pointer-events: none;
 }
@@ -332,99 +335,7 @@ body {
     margin: 0;
 }
 
-.menu-items-section {
-    padding: 0.75rem 0;
-}
 
-.menu-section-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    padding: 0.5rem 1.25rem 0.75rem 1.25rem;
-}
-
-.menu-item-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.menu-item-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
-    text-decoration: none;
-    font-size: 0.875rem;
-    color: var(--text-primary);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: inherit;
-    outline: none;
-    width: 100%;
-    text-align: left;
-}
-
-.menu-item-row i {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    color: var(--text-secondary);
-}
-
-.menu-item-label {
-    flex: 1;
-    font-weight: 500;
-}
-
-.menu-item-toggle {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    border: 2px solid rgba(99, 102, 241, 0.3);
-    background: rgba(99, 102, 241, 0.08);
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.menu-item-row:hover {
-    background: rgba(99, 102, 241, 0.05);
-}
-
-.menu-item-row:hover i {
-    color: var(--text-primary);
-}
-
-.theme-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
-    text-decoration: none;
-    font-size: 0.875rem;
-    color: var(--text-primary);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: inherit;
-    outline: none;
-    width: 100%;
-    text-align: left;
-}
-
-.theme-toggle i {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-}
-
-.theme-toggle:hover {
-    background: rgba(99, 102, 241, 0.05);
-}
 
 .menu-item-action {
     display: flex;

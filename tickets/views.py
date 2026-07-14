@@ -527,16 +527,40 @@ def admin_creer_ticket(request):
 def user_profile(request):
     user = request.user
     message = None
+    form_errors = []
     
     if request.method == 'POST':
-        # Mise à jour du profil utilisateur
-        user.first_name = request.POST.get('first_name', user.first_name)
-        user.last_name = request.POST.get('last_name', user.last_name)
-        user.email = request.POST.get('email', user.email)
-        user.save()
-        message = "Profil mis à jour avec succès!"
+        # Validation des données
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        
+        # Vérifications
+        if not first_name:
+            form_errors.append("Le prénom est obligatoire.")
+        if not last_name:
+            form_errors.append("Le nom est obligatoire.")
+        if not email:
+            form_errors.append("L'email est obligatoire.")
+        elif '@' not in email or '.' not in email:
+            form_errors.append("Veuillez entrer une adresse email valide.")
+        
+        # Vérifier si l'email est déjà utilisé par un autre utilisateur
+        if email and not form_errors:
+            existing_user = Utilisateur.objects.filter(email=email).exclude(id=user.id).first()
+            if existing_user:
+                form_errors.append("Cet email est déjà utilisé par un autre utilisateur.")
+        
+        # Mise à jour si pas d'erreurs
+        if not form_errors:
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            user.save()
+            message = "Votre profil a été mis à jour avec succès!"
     
     return render(request, 'tickets/profile.html', {
         'user': user,
-        'message': message
+        'message': message,
+        'form_errors': form_errors
     })

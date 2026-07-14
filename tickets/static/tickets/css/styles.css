@@ -661,9 +661,25 @@ html[data-theme="dark"] .menu-user-role {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+html[data-theme="dark"] .form-control:focus {
+    background: #1e293b;
+}
+
 textarea.form-control {
     min-height: 120px;
     resize: vertical;
+}
+
+.form-control:disabled,
+.form-control:read-only {
+    background: rgba(0, 0, 0, 0.05);
+    cursor: not-allowed;
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .form-control:disabled,
+html[data-theme="dark"] .form-control:read-only {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .form-control-lg {

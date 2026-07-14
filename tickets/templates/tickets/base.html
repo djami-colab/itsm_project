@@ -72,6 +72,13 @@
                             </div>
                             <div class="menu-user-details">
                                 <div class="menu-username">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</div>
+                                <div class="menu-user-role">
+                                    {% if user.is_client %}Client
+                                    {% elif user.is_admin %}Administrateur
+                                    {% elif user.is_technicien %}Technicien
+                                    {% else %}Utilisateur
+                                    {% endif %}
+                                </div>
                                 <a href="{% url 'user_profile' %}" class="menu-view-profile">Voir le profil</a>
                             </div>
                         </div>

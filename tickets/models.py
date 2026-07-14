@@ -9,6 +9,7 @@ class Role(models.Model):
 
 class Utilisateur(AbstractUser):
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
+    departement = models.CharField(max_length=100, blank=True, null=True)
     
     # We can add clean helper properties to check roles
     @property

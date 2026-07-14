@@ -534,6 +534,7 @@ def user_profile(request):
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
         email = request.POST.get('email', '').strip()
+        departement = request.POST.get('departement', '').strip()
         
         # Vérifications
         if not first_name:
@@ -556,6 +557,7 @@ def user_profile(request):
             user.first_name = first_name
             user.last_name = last_name
             user.email = email
+            user.departement = departement if departement else None
             user.save()
             message = "Votre profil a été mis à jour avec succès!"
     

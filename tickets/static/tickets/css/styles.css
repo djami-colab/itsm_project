@@ -661,9 +661,110 @@ html[data-theme="dark"] .menu-user-role {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+html[data-theme="dark"] .form-control:focus {
+    background: #1e293b;
+}
+
 textarea.form-control {
     min-height: 120px;
     resize: vertical;
+}
+
+.form-control:disabled,
+.form-control:read-only {
+    background: rgba(0, 0, 0, 0.05);
+    cursor: not-allowed;
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .form-control:disabled,
+html[data-theme="dark"] .form-control:read-only {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Profile Form Horizontal Layout */
+.profile-form-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: rgba(99, 102, 241, 0.02);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+    margin-bottom: 2rem;
+}
+
+html[data-theme="dark"] .profile-form-row {
+    background: rgba(99, 102, 241, 0.05);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.profile-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+html[data-theme="dark"] .profile-form-label {
+    color: #f1f5f9;
+}
+
+.profile-form-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    font-family: inherit;
+    background: var(--background);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.profile-form-input {
+    background: rgba(255, 255, 255, 0.8);
+    color: #1e293b;
+}
+
+html[data-theme="dark"] .profile-form-input {
+    background: rgba(30, 41, 59, 0.8);
+    color: #f1f5f9;
+}
+
+.profile-form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.profile-form-input:read-only {
+    background: rgba(0, 0, 0, 0.05);
+    cursor: not-allowed;
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .profile-form-input:read-only {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Responsive for smaller screens */
+@media (max-width: 1024px) {
+    .profile-form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .profile-form-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 .form-control-lg {

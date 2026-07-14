@@ -32,7 +32,7 @@
     {% endif %}
 
     <div class="card">
-        <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
             <i data-lucide="settings" style="vertical-align: middle; margin-right: 0.5rem;"></i>
             Paramètres du Profil
         </h1>
@@ -40,40 +40,40 @@
         <form method="POST" style="display: flex; flex-direction: column; gap: 0;">
             {% csrf_token %}
 
-            <!-- Formulaire Horizontal -->
-            <div class="profile-form-row">
-                <div class="profile-form-group">
-                    <label for="first_name" class="profile-form-label">Prénom</label>
-                    <input type="text" id="first_name" name="first_name" class="profile-form-input" value="{{ user.first_name }}" placeholder="Prénom" required>
+            <!-- Section Principale - Formulaire Horizontal Sur Toute la Page -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; width: 100%; margin-bottom: 2rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="first_name" style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">Prénom</label>
+                    <input type="text" id="first_name" name="first_name" style="padding: 0.75rem 1rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-size: 0.95rem; transition: var(--transition);" value="{{ user.first_name }}" placeholder="Prénom" required>
                 </div>
 
-                <div class="profile-form-group">
-                    <label for="last_name" class="profile-form-label">Nom</label>
-                    <input type="text" id="last_name" name="last_name" class="profile-form-input" value="{{ user.last_name }}" placeholder="Nom" required>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="last_name" style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">Nom</label>
+                    <input type="text" id="last_name" name="last_name" style="padding: 0.75rem 1rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-size: 0.95rem; transition: var(--transition);" value="{{ user.last_name }}" placeholder="Nom" required>
                 </div>
 
-                <div class="profile-form-group">
-                    <label for="username" class="profile-form-label">Identifiant</label>
-                    <input type="text" id="username" class="profile-form-input" value="{{ user.username }}" readonly>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="departement" style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">Département</label>
+                    <input type="text" id="departement" name="departement" style="padding: 0.75rem 1rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-size: 0.95rem; transition: var(--transition);" value="{{ user.departement }}" placeholder="Département">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="username" style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">Identifiant</label>
+                    <input type="text" id="username" style="padding: 0.75rem 1rem; background: rgba(99, 102, 241, 0.06); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-size: 0.95rem; cursor: not-allowed;" value="{{ user.username }}" readonly>
                     <small style="color: var(--text-secondary); font-size: 0.75rem;">Non modifiable</small>
-                </div>
-
-                <div class="profile-form-group">
-                    <label for="departement" class="profile-form-label">Département</label>
-                    <input type="text" id="departement" name="departement" class="profile-form-input" value="{{ user.departement }}" placeholder="Département">
                 </div>
             </div>
 
             <!-- Informations supplémentaires -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">Email</label>
+                    <input type="email" name="email" style="padding: 0.75rem 1rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-size: 0.95rem; transition: var(--transition);" value="{{ user.email }}" required>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Rôle</label>
-                    <div style="padding: 0.75rem 1rem; background: rgba(99, 102, 241, 0.06); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: #0f172a;">
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">Rôle</label>
+                    <div style="padding: 0.75rem 1rem; background: rgba(99, 102, 241, 0.06); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); display: flex; align-items: center; font-size: 0.95rem;">
                         {% if user.is_admin %}
                         Administrateur
                         {% elif user.is_technicien %}
@@ -86,9 +86,9 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Date d'inscription</label>
-                    <div style="padding: 0.75rem 1rem; background: rgba(99, 102, 241, 0.06); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: #0f172a; font-size: 0.875rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">Date d'inscription</label>
+                    <div style="padding: 0.75rem 1rem; background: rgba(99, 102, 241, 0.06); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); display: flex; align-items: center; font-size: 0.875rem;">
                         {{ user.date_joined|date:"d M Y à H:i" }}
                     </div>
                 </div>

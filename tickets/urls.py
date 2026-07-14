@@ -19,5 +19,6 @@ urlpatterns = [
     # Admin/Tech Portal
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin/tickets/', views.admin_liste_tickets, name='admin_liste_tickets'),
+    path('admin/ticket/nouveau/', views.admin_creer_ticket, name='admin_creer_ticket'),
     path('admin/ticket/<int:ticket_id>/', views.admin_detail_ticket, name='admin_detail_ticket'),
 ]

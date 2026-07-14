@@ -19,6 +19,13 @@
 {% endblock %}
 
 {% block content %}
+<!-- Action bar with create button -->
+<div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+    <a href="{% url 'admin_creer_ticket' %}" class="btn btn-primary" style="gap: 0.5rem;">
+        <i data-lucide="plus"></i> Créer un ticket
+    </a>
+</div>
+
 <!-- Filters card -->
 <div class="card" style="padding: 1.5rem;">
     <div class="filter-bar">

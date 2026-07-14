@@ -293,16 +293,28 @@ def admin_liste_tickets(request):
     tech_role = Role.objects.get(libelle='Technicien')
     techniciens = Utilisateur.objects.filter(role=tech_role)
     
+    # Handle both ID and libellé for selected_statut
+    selected_statut = None
+    if statut_filter:
+        if statut_filter.isdigit():
+            selected_statut = int(statut_filter)
+        else:
+            # If it's a libellé, find the ID
+            for statut in statuts:
+                if statut.libelle == statut_filter:
+                    selected_statut = statut.id
+                    break
+    
     return render(request, 'tickets/admin/liste_tickets.html', {
         'tickets': tickets,
         'statuts': statuts,
         'categories': categories,
         'priorites': priorites,
         'techniciens': techniciens,
-        'selected_statut': int(statut_filter) if statut_filter else None,
-        'selected_categorie': int(categorie_filter) if categorie_filter else None,
+        'selected_statut': selected_statut,
+        'selected_categorie': int(categorie_filter) if categorie_filter and categorie_filter.isdigit() else None,
         'selected_technicien': technicien_filter, # could be string 'none' or ID
-        'selected_priorite': int(priorite_filter) if priorite_filter else None,
+        'selected_priorite': int(priorite_filter) if priorite_filter and priorite_filter.isdigit() else None,
     })
 
 @login_required

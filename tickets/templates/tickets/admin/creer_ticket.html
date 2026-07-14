@@ -1,0 +1,187 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Créer un Ticket — ITSM Portal{% endblock %}
+{% block nav_admin_tickets_active %}active{% endblock %}
+
+{% block page_title %}Créer un nouveau ticket{% endblock %}
+{% block page_subtitle %}Complétez le formulaire ci-dessous pour créer et assigner un nouveau ticket directement depuis l'administration{% endblock %}
+
+{% block content %}
+<div class="ticket-create-page">
+    <div class="ticket-create-toolbar">
+        <a href="{% url 'admin_liste_tickets' %}" class="btn btn-secondary btn-sm">
+            <i data-lucide="arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="card ticket-create-card">
+        <form method="POST" action="{% url 'admin_creer_ticket' %}" enctype="multipart/form-data" id="ticket-form">
+            {% csrf_token %}
+
+            <div class="ticket-form-grid">
+                <!-- Colonne gauche : demandeur & catégorie -->
+                <div class="ticket-form-col">
+                    <div class="form-group">
+                        <label for="utilisateur" class="form-label">Demandeur <span class="required-mark">*</span></label>
+                        <select name="utilisateur" id="utilisateur" class="form-control" required>
+                            <option value="" disabled selected>Sélectionnez un utilisateur...</option>
+                            {% for user in utilisateurs %}
+                            <option value="{{ user.id }}">{{ user.username }} ({{ user.email }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categorie" class="form-label">Catégorie <span class="required-mark">*</span></label>
+                        <select name="categorie" id="categorie" class="form-control" required>
+                            <option value="" disabled selected>Sélectionnez une catégorie...</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.libelle }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="probleme" class="form-label">Type de problème <span class="required-mark">*</span></label>
+                        <select name="probleme" id="probleme" class="form-control" required>
+                            <option value="" disabled selected>Chargement des problèmes...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="group-probleme-autre" style="display: none;">
+                        <label for="probleme_autre" class="form-label">Précisez le problème <span class="required-mark">*</span></label>
+                        <input type="text" name="probleme_autre" id="probleme_autre" class="form-control" placeholder="Décrivez le problème non listé">
+                    </div>
+                </div>
+
+                <!-- Colonne droite : priorité, source & technicien -->
+                <div class="ticket-form-col">
+                    <div class="form-group">
+                        <label for="priorite" class="form-label">Priorité <span class="required-mark">*</span></label>
+                        <select name="priorite" id="priorite" class="form-control" required>
+                            {% for prio in priorites %}
+                            <option value="{{ prio.id }}" {% if prio.libelle == 'Moyenne' %}selected{% endif %}>{{ prio.libelle }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="source" class="form-label">Source du ticket</label>
+                        <select name="source" id="source" class="form-control">
+                            <option value="">-- Aucune source --</option>
+                            {% for src in sources %}
+                            <option value="{{ src.id }}">{{ src.libelle }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="technicien" class="form-label">Assigner à un technicien</label>
+                        <select name="technicien" id="technicien" class="form-control">
+                            <option value="">-- Non assigné --</option>
+                            {% for tech in techniciens %}
+                            <option value="{{ tech.id }}">{{ tech.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ticket-form-col">
+                <div class="form-group">
+                    <label for="description" class="form-label">Description <span class="form-optional">(optionnelle)</span></label>
+                    <textarea name="description" id="description" class="form-control form-control-lg" placeholder="Décrivez le problème, le contexte, les étapes pour reproduire, ou toute information utile..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Pièces jointes</label>
+                    <div class="file-upload-wrapper file-upload-compact">
+                        <i data-lucide="upload-cloud" class="file-upload-icon"></i>
+                        <p class="file-upload-title">Glissez vos fichiers ici ou cliquez pour parcourir</p>
+                        <p class="file-upload-subtitle">Captures d'écran, logs, PDF — plusieurs fichiers acceptés</p>
+                        <input type="file" name="fichiers" id="fichiers" class="file-upload-input" multiple>
+                    </div>
+                    <div id="file-list-preview" class="attachment-list"></div>
+                </div>
+            </div>
+
+            <div class="ticket-form-actions">
+                <a href="{% url 'admin_liste_tickets' %}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="plus"></i> Créer le ticket
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const categorieSelect = document.getElementById('categorie');
+        const problemSelect = document.getElementById('probleme');
+        const autreGroup = document.getElementById('group-probleme-autre');
+        const autreInput = document.getElementById('probleme_autre');
+        const fileInput = document.getElementById('fichiers');
+        const fileListPreview = document.getElementById('file-list-preview');
+
+        // Load problems when category changes
+        categorieSelect.addEventListener('change', function() {
+            const categoryId = this.value;
+            if (!categoryId) {
+                problemSelect.innerHTML = '<option value="" disabled selected>Sélectionnez une catégorie d\'abord...</option>';
+                return;
+            }
+
+            fetch(`/api/problemes/?categorie_id=${categoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    problemSelect.innerHTML = '<option value="" disabled selected>Choisissez le problème...</option>';
+
+                    data.problemes.forEach(prob => {
+                        const opt = document.createElement('option');
+                        opt.value = prob.id;
+                        opt.textContent = prob.libelle;
+                        problemSelect.appendChild(opt);
+                    });
+
+                    const optAutre = document.createElement('option');
+                    optAutre.value = 'autre';
+                    optAutre.textContent = "Autre problème (non listé)";
+                    problemSelect.appendChild(optAutre);
+                })
+                .catch(err => {
+                    console.error("Erreur lors de la récupération des problèmes:", err);
+                    problemSelect.innerHTML = '<option value="" disabled selected>Erreur de chargement</option>';
+                });
+        });
+
+        problemSelect.addEventListener('change', function() {
+            if (this.value === 'autre') {
+                autreGroup.style.display = 'block';
+                autreInput.setAttribute('required', 'required');
+                autreInput.focus();
+            } else {
+                autreGroup.style.display = 'none';
+                autreInput.removeAttribute('required');
+                autreInput.value = '';
+            }
+        });
+
+        fileInput.addEventListener('change', function() {
+            fileListPreview.innerHTML = '';
+            Array.from(this.files).forEach(file => {
+                const item = document.createElement('span');
+                item.className = 'attachment-badge';
+                item.innerHTML = `
+                    <i data-lucide="file" style="width: 14px; height: 14px;"></i>
+                    <span>${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>
+                `;
+                fileListPreview.appendChild(item);
+            });
+            lucide.createIcons();
+        });
+    });
+</script>
+{% endblock %}

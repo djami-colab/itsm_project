@@ -447,6 +447,80 @@ def admin_detail_ticket(request, ticket_id):
         'pieces_jointes': pieces_jointes
     })
 
+@login_required
+def admin_creer_ticket(request):
+    if not (request.user.is_admin or request.user.is_technicien):
+        return redirect('client_dashboard')
+
+    categories = Categorie.objects.all()
+    priorites = Priorite.objects.all().order_by('niveau')
+    utilisateurs = Utilisateur.objects.filter(role__libelle='Client', is_active=True).order_by('username')
+    sources = SourceTicket.objects.filter(actif=True).order_by('libelle')
+    
+    tech_role = Role.objects.get(libelle='Technicien')
+    techniciens = Utilisateur.objects.filter(role=tech_role, is_active=True).order_by('username')
+
+    if request.method == 'POST':
+        utilisateur_id = request.POST.get('utilisateur')
+        categorie_id = request.POST.get('categorie')
+        probleme_id = request.POST.get('probleme')
+        probleme_autre = request.POST.get('probleme_autre')
+        priorite_id = request.POST.get('priorite')
+        description = request.POST.get('description', '')
+        source_id = request.POST.get('source')
+        technicien_id = request.POST.get('technicien')
+
+        utilisateur = get_object_or_404(Utilisateur, id=utilisateur_id)
+        categorie = get_object_or_404(Categorie, id=categorie_id)
+        priorite = get_object_or_404(Priorite, id=priorite_id)
+        statut_nouveau = get_object_or_404(StatutTicket, libelle='Nouveau')
+        source = SourceTicket.objects.filter(id=source_id).first() if source_id else None
+        technicien = Utilisateur.objects.filter(id=technicien_id).first() if technicien_id else None
+
+        probleme = None
+        if probleme_id and probleme_id != 'autre':
+            probleme = get_object_or_404(Probleme, id=probleme_id)
+
+        ticket = Ticket.objects.create(
+            utilisateur=utilisateur,
+            categorie=categorie,
+            probleme=probleme,
+            probleme_autre=probleme_autre if not probleme else None,
+            priorite=priorite,
+            statut=statut_nouveau,
+            source=source,
+            technicien=technicien,
+            description=description
+        )
+
+        HistoriqueTicket.objects.create(
+            ticket=ticket,
+            ancien_statut=None,
+            nouveau_statut=statut_nouveau,
+            modifie_par=request.user,
+            commentaire=f"Création du ticket par l'admin/technicien {request.user.username}."
+        )
+
+        files = request.FILES.getlist('fichiers')
+        for f in files:
+            PieceJointe.objects.create(
+                ticket=ticket,
+                fichier=f,
+                nom_original=f.name,
+                uploaded_by=request.user
+            )
+
+        return redirect('admin_detail_ticket', ticket_id=ticket.id)
+
+    return render(request, 'tickets/admin/creer_ticket.html', {
+        'categories': categories,
+        'priorites': priorites,
+        'utilisateurs': utilisateurs,
+        'sources': sources,
+        'techniciens': techniciens,
+    })
+
+
 # ==================== PROFIL UTILISATEUR ====================
 
 @login_required

@@ -37,6 +37,62 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect_by_role(request.user)
+    
+    error_message = None
+    success_message = None
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        departement = request.POST.get('departement', '').strip()
+        password = request.POST.get('password', '')
+        password_confirm = request.POST.get('password_confirm', '')
+        
+        # Validation
+        if not all([username, email, first_name, last_name, password]):
+            error_message = "Tous les champs obligatoires doivent être remplis."
+        elif Utilisateur.objects.filter(username=username).exists():
+            error_message = "Cet identifiant existe déjà."
+        elif Utilisateur.objects.filter(email=email).exists():
+            error_message = "Cet email existe déjà."
+        elif len(password) < 6:
+            error_message = "Le mot de passe doit contenir au moins 6 caractères."
+        elif password != password_confirm:
+            error_message = "Les mots de passe ne correspondent pas."
+        else:
+            try:
+                # Créer l'utilisateur avec le rôle Client par défaut
+                role_client = Role.objects.get(libelle='Client')
+                user = Utilisateur.objects.create_user(
+                    username=username,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    departement=departement,
+                    role=role_client
+                )
+                user.set_password(password)
+                user.save()
+                
+                success_message = "Compte créé avec succès! Vous pouvez maintenant vous connecter."
+                # Optionnel: Connecter l'utilisateur automatiquement
+                # user = authenticate(request, username=username, password=password)
+                # if user is not None:
+                #     login(request, user)
+                #     return redirect_by_role(user)
+            except Exception as e:
+                error_message = f"Erreur lors de la création du compte: {str(e)}"
+    
+    return render(request, 'tickets/register.html', {
+        'error_message': error_message,
+        'success_message': success_message
+    })
+
 @login_required
 def dashboard_redirect(request):
     return redirect_by_role(request.user)
